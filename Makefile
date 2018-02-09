@@ -1,5 +1,5 @@
 #源文件
-SOURCE = main.cpp
+SOURCE = main.cpp protocolparser.cpp
 
 #可执行文件名称
 TARGET = server.o
@@ -8,7 +8,7 @@ TARGET = server.o
 CXX = g++ -Wall -std=c++17
 
 #opencv需要的参数
-#CFLAGS = `pkg-config opencv --cflags --libs`
+CFLAGS = `pkg-config opencv --cflags --libs`
 
 LIBS = -lpthread
 
