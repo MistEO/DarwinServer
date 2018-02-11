@@ -37,6 +37,19 @@ ProtocolParser::RequestType ProtocolParser::_unpack_request_line(const std::stri
     else {
         request_type = RequestType::Unknown;
     }
+
+    if (request_line[1] == "image") {
+        resource_type = ResourceType::Image;
+    }
+    else if (request_line[1] == "camera") {
+        resource_type = ResourceType::Camera;
+    }
+    else if (request_line[1] == "motor") {
+        resource_type = ResourceType::Motor;
+    }
+    else {
+        request_type = RequestType::Unknown;
+    }
     return request_type;
 }
 
@@ -55,7 +68,22 @@ std::vector<std::string> ProtocolParser::_split_string(const std::string& source
     return result;
 }
 
-std::string ProtocolParser::pack_status_line(int status, const std::string & status_name, const std::string & version)
+std::string ProtocolParser::pack_status_line(int status, const std::string & version)
 {
+    std::string status_name;
+    switch(status) {
+        case 200: status_name = "Ok"; break;
+        case 403: status_name = "Forbidden"; break;
+        case 404: status_name = "Not Found"; break;
+    }
     return version + " " + std::to_string(status) + " " + status_name + "\n";
+}
+
+std::string ProtocolParser::pack_header_line(const std::map<std::string, std::string> & header_line_map)
+{
+    std::string header;
+    for (auto line : header_line_map) {
+        header += line.first + ":" + line.second + "\n";
+    }
+    return header;
 }

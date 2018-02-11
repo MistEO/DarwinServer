@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class ProtocolParser
 {
@@ -18,13 +19,14 @@ public:
         Motor
     };
 
-    ProtocolParser() = default;
-    ~ProtocolParser() = default;
+    ProtocolParser() = delete;
     
     static RequestType unpack(
         const char * message, ResourceType & resource_type);
     static std::string pack_status_line(
-        int status, const std::string & status_name, const std::string & version = std::string("HTTP/1.1"));
+        int status, const std::string & version = std::string("HTTP/1.1"));
+    static std::string pack_header_line(
+        const std::map<std::string, std::string> & header_line_map);
 private:
     static std::vector<std::string> _split_string(
         const std::string & source, const std::string & c);

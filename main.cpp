@@ -8,13 +8,18 @@
 #include <pthread.h>
 #include <signal.h>
 
-#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
 
 #include "protocolparser.h"
+#include "resourcecontrol.h"
 
 void * client_fun(void * arg);
 cv::Mat get_image();
-void request_get_response(int connfd, ProtocolParser::ResourceType resource_type);
+void request_get_response(const int connfd, ProtocolParser::ResourceType resource_type);
+void request_image(const int connfd);
 
 int main(){
     //创建套接字
@@ -25,7 +30,7 @@ int main(){
     bzero(&server_address, sizeof(server_address));  //初始化用NULL填充
     server_address.sin_family = AF_INET;  //使用IPv4地址
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址
-    server_address.sin_port = htons(1243);  //端口
+    server_address.sin_port = htons(1240);  //端口
     bind(socket_fd, (struct sockaddr*)&server_address, sizeof(server_address));
 
     //进入监听状态，等待用户发起请求
@@ -61,7 +66,8 @@ void * client_fun(void * arg)
     int connfd = *(int*)arg;
     
     while((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {  
-        printf("recv_buf: %s\n", recv_buf); // 打印数据
+        printf("recv: %s\n", recv_buf); // 打印数据
+
         ProtocolParser::ResourceType resource_type;
         ProtocolParser::RequestType request_type = ProtocolParser::unpack(recv_buf, resource_type);
         switch (request_type) {
@@ -88,30 +94,35 @@ void * client_fun(void * arg)
     return NULL;
 }
 
-void request_get_response(int connfd, ProtocolParser::ResourceType resource_type)
+void request_get_response(const int connfd, ProtocolParser::ResourceType resource_type)
 {
-    std::string status_line = ProtocolParser::pack_status_line(200, "OK");
-    cv::Mat image = get_image();
-    int send_len = status_line.length() + sizeof("\n") + image.total()*image.elemSize() /*+ sizeof("\r\n")*/;
-    char send_str[send_len];
-    strcpy(send_str, status_line.c_str());
-    strcat(send_str, "\n");
-    strcat(send_str, (char *)image.data);
-    // strcat(send_str, "\r\n");
-    printf("send str:\n%s\nIMAGE DATA\n", status_line.c_str());
-
-    send(connfd, send_str, send_len, 0); // 给客户端回数据
+    switch (resource_type) {
+        case ProtocolParser::ResourceType::Image:
+            request_image(connfd);
+            break;
+        case ProtocolParser::ResourceType::Camera:
+            break;
+        case ProtocolParser::ResourceType::Motor:
+            break;
+    }
 }
 
-cv::Mat get_image()
+void request_image(const int connfd)
 {
-    static cv::VideoCapture cap(1);
-    if (!cap.isOpened()) {
-		throw cv::Exception(
-			-1, "The video capture isn't opened!",
-			__FUNCTION__, __FILE__, __LINE__);
-	}
-    cv::Mat image;
-    cap >> image;
-    return image;
+    std::vector<uchar> data;
+    int cols = 0, rows = 0, step = 0;
+    int status = ResourceControl::get_image(data, cols, rows, step);
+
+    std::string status_line = ProtocolParser::pack_status_line(status);
+
+    std::map<std::string, std::string> header_map;
+    header_map["cols"] = std::to_string(cols);
+    header_map["rows"] = std::to_string(rows);
+    header_map["step"] = std::to_string(step);
+    std::string header_line = ProtocolParser::pack_header_line(header_map);
+
+    std::string message = status_line + header_line + "\n";
+    std::cout << "send: " << message << std::endl;
+
+    // send(connfd, send_str, send_len, 0); // 给客户端回数据
 }
