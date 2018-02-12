@@ -1,5 +1,5 @@
 #源文件
-SOURCE = main.cpp protocolparser.cpp resourcecontrol.cpp
+SOURCE = main.cpp abstractmessage.cpp requestmessage.cpp responsemessage.cpp resourcecontrol.cpp
 
 #可执行文件名称
 TARGET = server.o

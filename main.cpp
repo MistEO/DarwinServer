@@ -13,13 +13,12 @@
 #include <vector>
 #include <map>
 
-#include "protocolparser.h"
+#include "responsemessage.h"
+#include "requestmessage.h"
 #include "resourcecontrol.h"
 
 void * client_fun(void * arg);
-cv::Mat get_image();
-void request_get_response(const int connfd, ProtocolParser::ResourceType resource_type);
-void request_image(const int connfd);
+void request_get_image(const int connfd);
 
 int main(){
     //创建套接字
@@ -67,23 +66,12 @@ void * client_fun(void * arg)
     
     while((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {  
         printf("recv: %s\n", recv_buf); // 打印数据
-
-        ProtocolParser::ResourceType resource_type;
-        ProtocolParser::RequestType request_type = ProtocolParser::unpack(recv_buf, resource_type);
-        switch (request_type) {
-            case ProtocolParser::RequestType::Get:
-                request_get_response(connfd, resource_type);
-                break;
-            case ProtocolParser::RequestType::Post:
-                break;
-            case ProtocolParser::RequestType::Head:
-                break;
-            case ProtocolParser::RequestType::Unknown:
-                break;
-            default:
-                break;
+        RequestMessage recv_message(recv_buf);
+        if (recv_message.request_type() == RequestMessage::Get) {
+            if (recv_message.resource_type() == RequestMessage::Image) {
+                request_get_image(connfd);
+            }
         }
-
         bzero(recv_buf, sizeof(recv_buf));
     }
 
@@ -94,35 +82,17 @@ void * client_fun(void * arg)
     return NULL;
 }
 
-void request_get_response(const int connfd, ProtocolParser::ResourceType resource_type)
+void request_get_image(int connfd)
 {
-    switch (resource_type) {
-        case ProtocolParser::ResourceType::Image:
-            request_image(connfd);
-            break;
-        case ProtocolParser::ResourceType::Camera:
-            break;
-        case ProtocolParser::ResourceType::Motor:
-            break;
-    }
-}
-
-void request_image(const int connfd)
-{
-    std::vector<uchar> data;
-    int cols = 0, rows = 0, step = 0;
-    int status = ResourceControl::get_image(data, cols, rows, step);
-
-    std::string status_line = ProtocolParser::pack_status_line(status);
-
-    std::map<std::string, std::string> header_map;
-    header_map["cols"] = std::to_string(cols);
-    header_map["rows"] = std::to_string(rows);
-    header_map["step"] = std::to_string(step);
-    std::string header_line = ProtocolParser::pack_header_line(header_map);
-
-    std::string message = status_line + header_line + "\n";
-    std::cout << "send: " << message << std::endl;
-
-    // send(connfd, send_str, send_len, 0); // 给客户端回数据
+    ResponseMessage send_message;
+    send_message.header_map["Content-Type"] = "Image";
+    send_message.set_status(
+        ResourceControl::get_image(
+            send_message.data,
+            send_message.header_map["Cols"],
+            send_message.header_map["Rows"],
+            send_message.header_map["Step"]));
+    // std::cout << "send: " << send_message.status_line() << std::endl;
+    std::string message_str = send_message.message();
+    send(connfd, message_str.c_str(), message_str.length(), 0);
 }
