@@ -3,7 +3,7 @@
 // #include <cstring>
 #include <iostream>
 
-std::string ResponseMessage::status_line() const
+std::string ResponseMessage::first_line() const
 {
     return version + " " + std::to_string(status()) + " " + status_name() + "\n";
 }
@@ -39,5 +39,5 @@ std::string ResponseMessage::header() const
 
 std::string ResponseMessage::to_string() const
 {
-    return (status_line() + header() + std::string("\n") + data);
+    return (first_line() + header() + std::string("\n") + data);
 }

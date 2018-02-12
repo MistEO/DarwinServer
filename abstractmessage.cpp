@@ -16,3 +16,12 @@ std::vector<std::string> AbstractMessage::_split_string(const std::string& sourc
         result.push_back(source.substr(pos1));
     return result;
 }
+
+std::ostream & operator<<(std::ostream & out, const AbstractMessage & amsg)
+{
+    out << amsg.first_line()
+        << amsg.header()
+        << "\n"
+        << (amsg.data.empty() ? std::string() : "std::string data, size:"+std::to_string(amsg.data.size()));
+    return out;
+}

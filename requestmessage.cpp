@@ -25,12 +25,15 @@ void RequestMessage::_unpack(const std::string & message)
     auto iter = lines.begin();
 
     _status_line = *iter;
-    _unpack_request_line(_status_line);
+    _unpack_request_line(*iter);
 
+    _header.clear();
     header_map.clear();
     for (++iter; iter != lines.end() && !iter->empty(); ++iter) {
+        _header += *iter + "\n";
         _unpack_header_line(*iter);
     }
+    
     data.clear();
     for (++iter; iter != lines.end(); ++iter) {
         if (!data.empty()) {

@@ -5,7 +5,7 @@
 class ResponseMessage: public AbstractMessage
 {
 public:
-    std::string status_line() const;
+    std::string first_line() const;
     int status() const;
     void set_status(const int status);
     std::string status_name() const;

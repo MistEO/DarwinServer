@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <iostream>
 
 class AbstractMessage
 {
@@ -15,6 +16,7 @@ public:
     std::string version = "HTTP/1.1";
     std::string data;
 
+    friend std::ostream & operator<<(std::ostream & out, const AbstractMessage & amsg);
 protected:
     static std::vector<std::string> _split_string(
         const std::string & source, const std::string & c);
