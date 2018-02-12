@@ -28,7 +28,16 @@ std::string ResponseMessage::status_name() const
     return _status_name;
 }
 
-std::string ResponseMessage::message() const
+std::string ResponseMessage::header() const
+{
+    std::string header_string;
+    for (auto pair : header_map) {
+        header_string += pair.first + ":" + pair.second + "\n";
+    }
+    return header_string;
+}
+
+std::string ResponseMessage::to_string() const
 {
     return (status_line() + header() + std::string("\n") + data);
 }

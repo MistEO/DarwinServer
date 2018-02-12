@@ -6,6 +6,7 @@
 
 RequestMessage::RequestMessage(const std::string & source_message)
 {
+    _source = source_message;
     _unpack(source_message);
 }
 
@@ -17,14 +18,25 @@ void RequestMessage::_unpack(const std::string & message)
     //按行分割
     std::vector<std::string> lines(_split_string(source, "\n"));
 
-    if (lines.empty()) {
+    if (lines.size() < 2) {
         std::cerr << "Request message segmentation error:\n" << message << std::endl;
         return;
     }
-    _status_line = lines.front();
+    auto iter = lines.begin();
+
+    _status_line = *iter;
     _unpack_request_line(_status_line);
-    for (auto i = lines.begin() + 1; i != lines.end() && !i->empty(); ++i) {
-        _unpack_header_line(*i);
+
+    header_map.clear();
+    for (++iter; iter != lines.end() && !iter->empty(); ++iter) {
+        _unpack_header_line(*iter);
+    }
+    data.clear();
+    for (++iter; iter != lines.end(); ++iter) {
+        if (!data.empty()) {
+            data += "\n";
+        }
+        data += *iter;
     }
 }
 
@@ -87,7 +99,7 @@ void RequestMessage::_unpack_header_line(const std::string & line)
     header_map[pair[0]] = pair[1];
 }
 
-std::string RequestMessage::status_line() const
+std::string RequestMessage::first_line() const
 {
     return _status_line;
 }
@@ -100,4 +112,27 @@ RequestMessage::RequestType RequestMessage::request_type() const
 RequestMessage::ResourceType RequestMessage::resource_type() const
 {
     return _resource_type;
+}
+
+std::string RequestMessage::header() const
+{
+    return _header;
+}
+
+std::string RequestMessage::to_string() const
+{
+    return _source;
+}
+
+const std::map<std::string, std::string> & RequestMessage::get_header_map() const
+{
+    return header_map;
+}
+const std::string & RequestMessage::get_version() const
+{
+    return version;
+}
+const std::string & RequestMessage::get_data() const
+{
+    return data;
 }

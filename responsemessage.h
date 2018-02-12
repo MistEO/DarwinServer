@@ -10,7 +10,8 @@ public:
     void set_status(const int status);
     std::string status_name() const;
     
-    std::string message() const;
+    std::string header() const;
+    std::string to_string() const;
 
 private:
     int _status;

@@ -92,7 +92,7 @@ void request_get_image(int connfd)
             send_message.header_map["Cols"],
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
-    // std::cout << "send: " << send_message.status_line() << std::endl;
-    std::string message_str = send_message.message();
+    // std::cout << "send: " << send_message.first_line() << std::endl;
+    std::string message_str = send_message.to_string();
     send(connfd, message_str.c_str(), message_str.length(), 0);
 }

@@ -7,8 +7,9 @@
 class AbstractMessage
 {
 public:
-    virtual std::string status_line() const = 0;
-    std::string header() const;
+    virtual std::string first_line() const = 0;
+    virtual std::string header() const = 0;
+    virtual std::string to_string() const = 0;
 
     std::map<std::string, std::string> header_map;
     std::string version = "HTTP/1.1";

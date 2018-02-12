@@ -1,16 +1,6 @@
 #include "abstractmessage.h"
 
-#include <iostream>
 #include <algorithm>
-
-std::string AbstractMessage::header() const
-{
-    std::string header_string;
-    for (auto pair : header_map) {
-        header_string += pair.first + ":" + pair.second + "\n";
-    }
-    return header_string;
-}
 
 std::vector<std::string> AbstractMessage::_split_string(const std::string& source, const std::string& c)
 {
