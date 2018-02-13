@@ -5,28 +5,32 @@
 
 cv::VideoCapture ResourceControl::capture(0);
 
-int ResourceControl::get_image(std::string & data, int & cols, int & rows, int & step)
+int ResourceControl::get_image(std::string &data, int &cols, int &rows, int &step)
 {
-    if (!capture.isOpened()) {
+    if (!capture.isOpened())
+    {
         return 404;
     }
     cv::Mat frame;
-    capture >> frame;
-    if (frame.empty()) {
+    for (int i = 0; i != 5; ++i)
+    {
+        capture >> frame;
+    }
+    if (frame.empty())
+    {
         return 403;
     }
     cv::Mat rgb_frame;
     cv::cvtColor(frame, rgb_frame, CV_BGR2RGB);
+    // rgb_frame = rgb_frame.reshape(0,1); // to make it continuous
 
-    data = std::string((char*)rgb_frame.data, frame.total()*frame.elemSize());
     cols = rgb_frame.cols;
     rows = rgb_frame.rows;
-    step = rgb_frame.step;
+    step = rgb_frame.step1();
     return 200;
 }
 
-
-int ResourceControl::get_image(std::string & data, std::string & cols, std::string & rows, std::string & step)
+int ResourceControl::get_image(std::string &data, std::string &cols, std::string &rows, std::string &step)
 {
     int icols, irows, istep;
     int return_code = get_image(data, icols, irows, istep);
