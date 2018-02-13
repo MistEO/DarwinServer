@@ -15,10 +15,13 @@ int ResourceControl::get_image(std::string & data, int & cols, int & rows, int &
     if (frame.empty()) {
         return 403;
     }
-    data = std::string(frame.data, frame.data + sizeof(frame.data)/sizeof(uchar));
-    cols = frame.cols;
-    rows = frame.rows;
-    step = frame.step;
+    cv::Mat rgb_frame;
+    cv::cvtColor(frame, rgb_frame, CV_BGR2RGB);
+
+    data = std::string((char*)rgb_frame.data, frame.total()*frame.elemSize());
+    cols = rgb_frame.cols;
+    rows = rgb_frame.rows;
+    step = rgb_frame.step;
     return 200;
 }
 

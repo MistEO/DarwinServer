@@ -18,7 +18,8 @@
 #include "resourcecontrol.h"
 
 void * client_fun(void * arg);
-void request_get_image(const int connfd);
+void request_get_image(int connfd);
+void segmetation_send(int connfd, const std::string & buff, size_t maxsize = 4096, int flags = 0);
 
 int main(){
     //创建套接字
@@ -29,7 +30,7 @@ int main(){
     bzero(&server_address, sizeof(server_address));  //初始化用NULL填充
     server_address.sin_family = AF_INET;  //使用IPv4地址
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");  //具体的IP地址
-    server_address.sin_port = htons(1240);  //端口
+    server_address.sin_port = htons(1241);  //端口
     bind(socket_fd, (struct sockaddr*)&server_address, sizeof(server_address));
 
     //进入监听状态，等待用户发起请求
@@ -92,7 +93,19 @@ void request_get_image(int connfd)
             send_message.header_map["Cols"],
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
-    std::string message_str = send_message.to_string();
     std::cout << "send: " << send_message << std::endl;
-    send(connfd, message_str.c_str(), message_str.length(), 0);
+    segmetation_send(connfd, send_message.to_string());
+}
+
+void segmetation_send(int connfd, const std::string & buff, size_t maxsize, int flags)
+{
+    size_t pos = 0;
+    for (; pos < buff.length(); pos += maxsize) {
+        //最后一个包
+        if (pos+maxsize >= buff.length()) {
+            send(connfd, buff.substr(pos, buff.length()-1).data(), buff.length()-1-pos, flags);
+            break;
+        }
+        send(connfd, buff.substr(pos, pos+maxsize).data(), maxsize, flags);
+    }
 }
