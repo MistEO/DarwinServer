@@ -23,6 +23,7 @@ int ResourceControl::get_image(std::string &data, int &cols, int &rows, int &ste
     cv::Mat rgb_frame;
     cv::cvtColor(frame, rgb_frame, CV_BGR2RGB);
     // rgb_frame = rgb_frame.reshape(0,1); // to make it continuous
+    data = std::string((char*)rgb_frame.data, frame.total()*frame.elemSize());
 
     cols = rgb_frame.cols;
     rows = rgb_frame.rows;
