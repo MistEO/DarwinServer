@@ -181,6 +181,12 @@ void *lclient_fun(void *arg)
     socklen_t client_address_size = sizeof(client_address);
     //接受客户端请求
     int client_sock = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_size);
+    if (client_sock < 0) {
+        perror("accept");
+    }
+    else {
+        std::cout << "Accept local socket" << std::endl;
+    }
 
     client_rs_fun(&client_sock);
 
