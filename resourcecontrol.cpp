@@ -3,7 +3,7 @@
 #include <iterator>
 #include <algorithm>
 
-cv::VideoCapture ResourceControl::capture(0);
+cv::VideoCapture ResourceControl::capture(2);
 
 int ResourceControl::get_image(std::string &data, int &cols, int &rows, int &step)
 {
