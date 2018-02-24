@@ -14,6 +14,7 @@ public:
     enum ResourceType {
         UnknownResource,
         Image,
+        Audio,
         Camera,
         Motor
     };

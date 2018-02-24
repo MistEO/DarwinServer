@@ -13,15 +13,17 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdexcept>
 
 #include "responsemessage.h"
 #include "requestmessage.h"
 #include "resourcecontrol.h"
 
-void *client_rs_fun(void *arg);
 void request_get_image(int connfd);
-void segmetation_send(int connfd, const std::string &buff, size_t maxsize = 4096, int flags = 0);
+void request_post_audio(int connfd, const std::string &file_path);
 
+void segmetation_send(int connfd, const std::string &buff, size_t maxsize = 4096, int flags = 0);
+void *client_rs_fun(void *arg);
 int make_named_socket(const char *filename);
 void *lclient_fun(void *arg);
 
@@ -81,14 +83,43 @@ void *client_rs_fun(void *arg)
     {
         printf("recv: %s\n", recv_buf); // 打印数据
         RequestMessage recv_message(recv_buf);
-        if (recv_message.request_type() == RequestMessage::Get)
+        switch (recv_message.request_type())
         {
-            if (recv_message.resource_type() == RequestMessage::Image)
+        case RequestMessage::Get:
+            switch (recv_message.resource_type())
             {
+            case RequestMessage::Image:
                 request_get_image(connfd);
+                break;
+            default:
+                break;
             }
+            break;
+        case RequestMessage::Post:
+            switch (recv_message.resource_type())
+            {
+            case RequestMessage::Audio:
+            {
+                std::string filepath;
+                try
+                {
+                    filepath = recv_message.get_header_map().at("filepath");
+                }
+                catch (std::out_of_range &e)
+                {
+                    std::cerr << e.what() << std::endl;
+                    filepath = "";
+                }
+                request_post_audio(connfd, filepath);
+            }
+            break;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
         }
-        bzero(recv_buf, sizeof(recv_buf));
     }
 
     printf("client closed\n");
@@ -109,6 +140,14 @@ void request_get_image(int connfd)
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
     std::cout << "send: " << send_message << std::endl;
+    segmetation_send(connfd, send_message.to_string());
+}
+
+void request_post_audio(int connfd, const std::string &file_path)
+{
+    ResponseMessage send_message;
+    send_message.set_status(ResourceControl::play_audio(file_path));
+    std::cout << "send: " << send_message.to_string() << std::endl;
     segmetation_send(connfd, send_message.to_string());
 }
 
@@ -181,10 +220,12 @@ void *lclient_fun(void *arg)
     socklen_t client_address_size = sizeof(client_address);
     //接受客户端请求
     int client_sock = accept(socket_fd, (struct sockaddr *)&client_address, &client_address_size);
-    if (client_sock < 0) {
+    if (client_sock < 0)
+    {
         perror("accept");
     }
-    else {
+    else
+    {
         std::cout << "Accept local socket" << std::endl;
     }
 
