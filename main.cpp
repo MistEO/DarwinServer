@@ -216,6 +216,16 @@ int make_named_socket(const char *filename)
 void *lclient_fun(void *arg)
 {
     int socket_fd = *(int *)arg;
+
+    pid_t aiui_pid = fork();
+    if (aiui_pid == 0) {
+        if (execl("./Aiui", "./Aiui", NULL) == -1) {
+            perror("execl ./Aiui failure");
+            close(socket_fd);
+            return NULL;
+        }
+    }
+
     struct sockaddr_in client_address;
     socklen_t client_address_size = sizeof(client_address);
     //接受客户端请求
