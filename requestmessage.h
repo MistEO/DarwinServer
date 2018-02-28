@@ -14,8 +14,10 @@ public:
         UnknownResource,
         Image,
         Audio,
+        StopAudio,
         Camera,
-        Motor
+        Motor,
+        StopMotor
     };
 
     RequestMessage(const std::string& source_message);

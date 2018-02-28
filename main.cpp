@@ -20,6 +20,7 @@
 #include "responsemessage.h"
 
 void request_get_image(int connfd);
+void request_stop_audio(int connfd);
 void request_post_audio(int connfd, const std::string& file_path);
 
 void segmetation_send(int connfd, const std::string& buff, size_t maxsize = 4096, int flags = 0);
@@ -87,6 +88,9 @@ void* client_rs_fun(void* arg)
             case RequestMessage::Image:
                 request_get_image(connfd);
                 break;
+            case RequestMessage::StopAudio:
+                request_stop_audio(connfd);
+                break;
             default:
                 break;
             }
@@ -130,6 +134,14 @@ void request_get_image(int connfd)
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
     std::cout << "send: " << send_message << std::endl;
+    segmetation_send(connfd, send_message.to_string());
+}
+
+void request_stop_audio(int connfd)
+{
+    ResponseMessage send_message;
+    send_message.set_status(ResourceControl::get_stop_audio());
+    std::cout << "send: " << send_message.to_string() << std::endl;
     segmetation_send(connfd, send_message.to_string());
 }
 

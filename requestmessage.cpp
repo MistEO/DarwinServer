@@ -1,16 +1,16 @@
 #include "requestmessage.h"
 
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
-RequestMessage::RequestMessage(const std::string &source_message)
+RequestMessage::RequestMessage(const std::string& source_message)
 {
     _source = source_message;
     _unpack(source_message);
 }
 
-void RequestMessage::_unpack(const std::string &message)
+void RequestMessage::_unpack(const std::string& message)
 {
     std::string source(message);
     //转换为小写
@@ -18,8 +18,7 @@ void RequestMessage::_unpack(const std::string &message)
     //按行分割
     std::vector<std::string> lines(_split_string(source, "\n"));
 
-    if (lines.size() < 2)
-    {
+    if (lines.size() < 2) {
         std::cerr << "Request message segmentation error:\n"
                   << message << std::endl;
         return;
@@ -31,93 +30,72 @@ void RequestMessage::_unpack(const std::string &message)
 
     _header.clear();
     header_map.clear();
-    for (++iter; iter != lines.end() && !iter->empty(); ++iter)
-    {
+    for (++iter; iter != lines.end() && !iter->empty(); ++iter) {
         _header += *iter + "\n";
         _unpack_header_line(*iter);
     }
 
     data.clear();
-    for (++iter; iter != lines.end(); ++iter)
-    {
-        if (!data.empty())
-        {
+    for (++iter; iter != lines.end(); ++iter) {
+        if (!data.empty()) {
             data += "\n";
         }
         data += *iter;
     }
 }
 
-void RequestMessage::_unpack_request_line(const std::string &line)
+void RequestMessage::_unpack_request_line(const std::string& line)
 {
     //按空格分割
     std::vector<std::string> request_line(_split_string(line, " "));
 
     //处理请求类型
-    if (request_line.empty())
-    {
+    if (request_line.empty()) {
         _request_type = RequestType::Unknown;
         return;
     }
-    if (request_line.front() == "Get")
-    {
+    if (request_line.front() == "Get") {
         _request_type = RequestType::Get;
-    }
-    else if (request_line.front() == "Head")
-    {
+    } else if (request_line.front() == "Head") {
         _request_type = RequestType::Head;
-    }
-    else if (request_line.front() == "Post")
-    {
+    } else if (request_line.front() == "Post") {
         _request_type = RequestType::Post;
-    }
-    else
-    {
+    } else {
         _request_type = RequestType::Unknown;
     }
 
     //处理资源类型
-    if (request_line.size() < 2)
-    {
+    if (request_line.size() < 2) {
         _resource_type = ResourceType::UnknownResource;
         return;
     }
-    if (request_line[1] == "Image")
-    {
+    if (request_line[1] == "Image") {
         _resource_type = ResourceType::Image;
-    }
-    else if (request_line[1] == "Camera")
-    {
+    } else if (request_line[1] == "Camera") {
         _resource_type = ResourceType::Camera;
-    }
-    else if (request_line[1] == "Audio")
-    {
+    } else if (request_line[1] == "Audio") {
         _resource_type = ResourceType::Audio;
-    }
-    else if (request_line[1] == "Motor")
-    {
+    } else if (request_line[1] == "StopAudio") {
+        _resource_type = ResourceType::StopAudio;
+    } else if (request_line[1] == "Motor") {
         _resource_type = ResourceType::Motor;
-    }
-    else
-    {
+    } else if (request_line[1] == "StopMotor") {
+        _resource_type = ResourceType::StopMotor;
+    } else {
         _resource_type = ResourceType::UnknownResource;
     }
 
-    if (request_line.size() < 3)
-    {
+    if (request_line.size() < 3) {
         version = "";
-    }
-    else
-    {
+    } else {
         version = request_line[2];
     }
 }
 
-void RequestMessage::_unpack_header_line(const std::string &line)
+void RequestMessage::_unpack_header_line(const std::string& line)
 {
     auto pair = _split_string(line, ":");
-    if (pair.size() != 2)
-    {
+    if (pair.size() != 2) {
         std::cerr << "Request header segmentation error: " << line << std::endl;
         return;
     }
@@ -151,15 +129,15 @@ std::string RequestMessage::to_string() const
     return _source;
 }
 
-const std::map<std::string, std::string> &RequestMessage::get_header_map() const
+const std::map<std::string, std::string>& RequestMessage::get_header_map() const
 {
     return header_map;
 }
-const std::string &RequestMessage::get_version() const
+const std::string& RequestMessage::get_version() const
 {
     return version;
 }
-const std::string &RequestMessage::get_data() const
+const std::string& RequestMessage::get_data() const
 {
     return data;
 }

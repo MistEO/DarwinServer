@@ -1,9 +1,12 @@
 #include "resourcecontrol.h"
 
 #include <algorithm>
+#include <fcntl.h>
 #include <iterator>
+#include <unistd.h>
 
 cv::VideoCapture ResourceControl::capture(0);
+const std::string ResourceControl::PlayApp("mplayer");
 
 int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
 {
@@ -38,9 +41,20 @@ int ResourceControl::get_image(std::string& data, std::string& cols, std::string
     return return_code;
 }
 
+int ResourceControl::get_stop_audio()
+{
+    const std::string kill_cmd = "killall -9 " + PlayApp;
+    std::cout << kill_cmd << std::endl;
+    if (system(kill_cmd.c_str())) {
+        perror(kill_cmd.c_str());
+        return 500;
+    }
+    return 200;
+}
+
 int ResourceControl::play_audio(const std::string& file_path)
 {
-    if (file_path.empty()) {
+    if (file_path.empty() || access(file_path.c_str(), F_OK | W_OK)) {
         return 404;
     }
     const std::string hide_output_cmd = " > /dev/null 2>&1";
@@ -62,7 +76,7 @@ int ResourceControl::play_audio(const std::string& file_path)
     //     }
     //     format = ".mp3";
     // }
-    std::string play_audio_cmd = "mplayer " + file_path + hide_output_cmd;
+    std::string play_audio_cmd = PlayApp + " " + file_path + hide_output_cmd + " &";
     std::cout << play_audio_cmd << std::endl;
     // system("play net_audio.mp3 > /dev/null 2>&1");
     if (system(play_audio_cmd.c_str())) {
