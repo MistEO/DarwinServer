@@ -6,9 +6,8 @@ std::vector<std::string> AbstractMessage::_split_string(const std::string& sourc
 {
     std::string::size_type pos1 = 0, pos2 = source.find(c);
     std::vector<std::string> result;
-    while (std::string::npos != pos2)
-    {
-        result.push_back(source.substr(pos1, pos2-pos1));
+    while (std::string::npos != pos2) {
+        result.push_back(source.substr(pos1, pos2 - pos1));
         pos1 = pos2 + c.size();
         pos2 = source.find(c, pos1);
     }
@@ -17,12 +16,12 @@ std::vector<std::string> AbstractMessage::_split_string(const std::string& sourc
     return result;
 }
 
-std::ostream & operator<<(std::ostream & out, const AbstractMessage & amsg)
+std::ostream& operator<<(std::ostream& out, const AbstractMessage& amsg)
 {
     out << amsg.first_line()
         << amsg.header()
         << "\n"
-        << (amsg.data.empty() ? std::string() : "std::string data, size:"+std::to_string(amsg.data.size()))\
+        << (amsg.data.empty() ? std::string() : "std::string data, size:" + std::to_string(amsg.data.size()))
         << "\r\n";
     return out;
 }

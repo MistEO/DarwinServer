@@ -16,11 +16,19 @@ int ResponseMessage::status() const
 void ResponseMessage::set_status(const int status)
 {
     _status = status;
-    switch(status) {
-        case 200: _status_name = "Ok"; break;
-        case 403: _status_name = "Forbidden"; break;
-        case 404: _status_name = "Not Found"; break;
-        case 500: _status_name = "Internal Server Error"; break;
+    switch (status) {
+    case 200:
+        _status_name = "Ok";
+        break;
+    case 403:
+        _status_name = "Forbidden";
+        break;
+    case 404:
+        _status_name = "Not Found";
+        break;
+    case 500:
+        _status_name = "Internal Server Error";
+        break;
     }
 }
 

@@ -122,7 +122,7 @@ void RequestMessage::_unpack_header_line(const std::string &line)
         return;
     }
     std::transform(pair[0].begin(), pair[0].end(), pair[0].begin(), ::tolower);
-    std::cout << "key:" << pair[0] << " value:" << pair[1] << std::endl;
+    // std::cout << "key:" << pair[0] << " value:" << pair[1] << std::endl;
     header_map[pair[0]] = pair[1];
 }
 
