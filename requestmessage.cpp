@@ -94,14 +94,17 @@ void RequestMessage::_unpack_request_line(const std::string& line)
 
 void RequestMessage::_unpack_header_line(const std::string& line)
 {
-    auto pair = _split_string(line, ":");
-    if (pair.size() != 2) {
+    size_t seg_index = line.find(":");
+    if (seg_index == std::string::npos) {
         std::cerr << "Request header segmentation error: " << line << std::endl;
         return;
     }
-    std::transform(pair[0].begin(), pair[0].end(), pair[0].begin(), ::tolower);
+    std::string key = line.substr(0, seg_index);
+    std::string value = line.substr(seg_index + 1, line.length() - seg_index);
+
+    std::transform(key.begin(), key.end(), key.begin(), ::tolower);
     // std::cout << "key:" << pair[0] << " value:" << pair[1] << std::endl;
-    header_map[pair[0]] = pair[1];
+    header_map[key] = value;
 }
 
 std::string RequestMessage::first_line() const

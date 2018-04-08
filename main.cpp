@@ -22,6 +22,7 @@
 void request_get_image(int connfd);
 void request_stop_audio(int connfd);
 void request_post_audio(int connfd, const std::string& file_path);
+void request_unknown(int connfd);
 
 void segmetation_send(int connfd, const std::string& buff, size_t maxsize = 4096, int flags = 0);
 void* client_rs_fun(void* arg);
@@ -43,8 +44,12 @@ int main()
     bzero(&server_address, sizeof(server_address)); //初始化用NULL填充
     server_address.sin_family = AF_INET; //使用IPv4地址
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1"); //具体的IP地址
-    server_address.sin_port = htons(1240); //端口
-    bind(socket_fd, (struct sockaddr*)&server_address, sizeof(server_address));
+    server_address.sin_port = htons(1250); //端口
+    if (bind(socket_fd, (struct sockaddr*)&server_address, sizeof(server_address))) {
+        close(socket_fd);
+        perror("bind");
+        return 1;
+    }
 
     //进入监听状态，等待用户发起请求
     listen(socket_fd, 20);
@@ -92,6 +97,7 @@ void* client_rs_fun(void* arg)
                 request_stop_audio(connfd);
                 break;
             default:
+                request_unknown(connfd);
                 break;
             }
             break;
@@ -108,10 +114,12 @@ void* client_rs_fun(void* arg)
                 request_post_audio(connfd, filepath);
             } break;
             default:
+                request_unknown(connfd);
                 break;
             }
             break;
         default:
+            request_unknown(connfd);
             break;
         }
     }
@@ -149,6 +157,14 @@ void request_post_audio(int connfd, const std::string& file_path)
 {
     ResponseMessage send_message;
     send_message.set_status(ResourceControl::play_audio(file_path));
+    std::cout << "send: " << send_message.to_string() << std::endl;
+    segmetation_send(connfd, send_message.to_string());
+}
+
+void request_unknown(int connfd)
+{
+    ResponseMessage send_message;
+    send_message.set_status(400);
     std::cout << "send: " << send_message.to_string() << std::endl;
     segmetation_send(connfd, send_message.to_string());
 }

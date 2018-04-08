@@ -20,6 +20,9 @@ void ResponseMessage::set_status(const int status)
     case 200:
         _status_name = "Ok";
         break;
+    case 400:
+        _status_name = "Bad Request";
+        break;
     case 403:
         _status_name = "Forbidden";
         break;

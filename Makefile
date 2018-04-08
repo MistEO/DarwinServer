@@ -5,7 +5,7 @@ SOURCE = main.cpp abstractmessage.cpp requestmessage.cpp responsemessage.cpp res
 TARGET = server.o
 
 #使用g++编译，且以C++11标准
-CXX = g++ -Wall -std=c++17
+CXX = g++ -Wall -std=c++11 -g
 
 #opencv需要的参数
 CFLAGS = `pkg-config opencv --cflags --libs`

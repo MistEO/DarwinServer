@@ -5,7 +5,7 @@
 #include <iterator>
 #include <unistd.h>
 
-cv::VideoCapture ResourceControl::capture(0);
+cv::VideoCapture ResourceControl::capture(-1);
 const std::string ResourceControl::PlayApp("mplayer");
 
 int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
