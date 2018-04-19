@@ -29,11 +29,15 @@ void* client_rs_fun(void* arg);
 int make_named_socket(const char* filename);
 void* lclient_fun(void* arg);
 
+int aiui_scoket_fd;
+volatile bool aiui_is_connect;
+
 int main()
 {
-    int lscoket_fd = make_named_socket("/tmp/Aiui.domain");
+    aiui_is_connect = false;
+    aiui_scoket_fd = make_named_socket("/tmp/Aiui.domain");
     pthread_t ltid;
-    pthread_create(&ltid, NULL, lclient_fun, &lscoket_fd);
+    pthread_create(&ltid, NULL, lclient_fun, &aiui_scoket_fd);
     pthread_detach(ltid);
 
     //创建套接字
@@ -74,7 +78,7 @@ int main()
 
     //关闭套接字
     close(socket_fd);
-    close(lscoket_fd);
+    close(aiui_scoket_fd);
     return 0;
 }
 
@@ -123,7 +127,7 @@ void* client_rs_fun(void* arg)
             break;
         }
     }
-
+    aiui_is_connect = false;
     printf("client closed\n");
     //关闭套接字
     close(connfd);
@@ -246,6 +250,7 @@ void* lclient_fun(void* arg)
     if (client_sock < 0) {
         perror("accept");
     } else {
+        aiui_is_connect = true;
         std::cout << "Accept local socket" << std::endl;
     }
 
