@@ -14,9 +14,7 @@ int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& ste
         return 404;
     }
     cv::Mat frame;
-    for (int i = 0; i != 5; ++i) {
-        capture >> frame;
-    }
+    capture >> frame;
     if (frame.empty()) {
         return 403;
     }
