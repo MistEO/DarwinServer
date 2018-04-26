@@ -30,13 +30,19 @@ void RequestMessage::_unpack(const std::string& message)
 
     _header.clear();
     header_map.clear();
-    for (++iter; iter != lines.end() && !iter->empty(); ++iter) {
+    if (++iter == lines.end()) {
+        return;
+    }
+    for (; iter != lines.end() && !iter->empty(); ++iter) {
         _header += *iter + "\n";
         _unpack_header_line(*iter);
     }
 
     data.clear();
-    for (++iter; iter != lines.end(); ++iter) {
+    if (++iter == lines.end()) {
+        return;
+    }
+    for (; iter != lines.end(); ++iter) {
         if (!data.empty()) {
             data += "\n";
         }
@@ -54,11 +60,11 @@ void RequestMessage::_unpack_request_line(const std::string& line)
         _request_type = RequestType::Unknown;
         return;
     }
-    if (request_line.front() == "Get") {
+    if (request_line.front() == "GET") {
         _request_type = RequestType::Get;
-    } else if (request_line.front() == "Head") {
+    } else if (request_line.front() == "HEAD") {
         _request_type = RequestType::Head;
-    } else if (request_line.front() == "Post") {
+    } else if (request_line.front() == "POST") {
         _request_type = RequestType::Post;
     } else {
         _request_type = RequestType::Unknown;
@@ -69,17 +75,17 @@ void RequestMessage::_unpack_request_line(const std::string& line)
         _resource_type = ResourceType::UnknownResource;
         return;
     }
-    if (request_line[1] == "Image") {
+    if (request_line[1] == "/image") {
         _resource_type = ResourceType::Image;
-    } else if (request_line[1] == "Camera") {
-        _resource_type = ResourceType::Camera;
-    } else if (request_line[1] == "Audio") {
+        // } else if (request_line[1] == "Camera") {
+        //     _resource_type = ResourceType::Camera;
+    } else if (request_line[1] == "/audio") {
         _resource_type = ResourceType::Audio;
-    } else if (request_line[1] == "StopAudio") {
+    } else if (request_line[1] == "/stop_audio") {
         _resource_type = ResourceType::StopAudio;
-    } else if (request_line[1] == "Motor") {
+    } else if (request_line[1] == "/motor") {
         _resource_type = ResourceType::Motor;
-    } else if (request_line[1] == "StopMotor") {
+    } else if (request_line[1] == "/stop_motor") {
         _resource_type = ResourceType::StopMotor;
     } else {
         _resource_type = ResourceType::UnknownResource;
