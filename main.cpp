@@ -24,7 +24,7 @@ void request_audio(int connfd, const std::string& file_path);
 void request_stop_audio(int connfd);
 void request_unknown(int connfd);
 
-void segmetation_send(int connfd, const std::string& buff, size_t maxsize = 4096, int flags = 0);
+void send_string(int connfd, const std::string& buff);
 void* client_rs_fun(void* arg);
 int make_named_socket(const char* filename);
 void* lclient_fun(void* arg);
@@ -124,7 +124,7 @@ void* client_rs_fun(void* arg)
 void request_image(int connfd)
 {
     ResponseMessage send_message;
-    send_message.header_map["Content-Type"] = "Image";
+    send_message.header_map["Content-Type"] = "image";
     send_message.set_status(
         ResourceControl::get_image(
             send_message.data,
@@ -132,7 +132,7 @@ void request_image(int connfd)
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
     std::cout << "send: " << send_message << std::endl;
-    segmetation_send(connfd, send_message.to_string());
+    send_string(connfd, send_message.to_string() + "\r\n");
 }
 
 void request_stop_audio(int connfd)
@@ -140,7 +140,7 @@ void request_stop_audio(int connfd)
     ResponseMessage send_message;
     send_message.set_status(ResourceControl::get_stop_audio());
     std::cout << "send: " << send_message.to_string() << std::endl;
-    segmetation_send(connfd, send_message.to_string());
+    send_string(connfd, send_message.to_string());
 }
 
 void request_audio(int connfd, const std::string& file_path)
@@ -148,7 +148,7 @@ void request_audio(int connfd, const std::string& file_path)
     ResponseMessage send_message;
     send_message.set_status(ResourceControl::play_audio(file_path));
     std::cout << "send: " << send_message.to_string() << std::endl;
-    segmetation_send(connfd, send_message.to_string());
+    send_string(connfd, send_message.to_string());
 }
 
 void request_unknown(int connfd)
@@ -156,20 +156,21 @@ void request_unknown(int connfd)
     ResponseMessage send_message;
     send_message.set_status(400);
     std::cout << "send: " << send_message.to_string() << std::endl;
-    segmetation_send(connfd, send_message.to_string());
+    send_string(connfd, send_message.to_string());
 }
 
-void segmetation_send(int connfd, const std::string& buff, size_t maxsize, int flags)
+void send_string(int connfd, const std::string& buff)
 {
-    size_t pos = 0;
-    for (; pos < buff.length(); pos += maxsize) {
-        //最后一个包
-        if (pos + maxsize >= buff.length()) {
-            send(connfd, buff.substr(pos, buff.length() - 1).data(), buff.length() - 1 - pos, flags);
-            break;
-        }
-        send(connfd, buff.substr(pos, pos + maxsize).data(), maxsize, flags);
-    }
+    // size_t pos = 0;
+    // for (; pos < buff.length(); pos += maxsize) {
+    //     //最后一个包
+    //     if (pos + maxsize >= buff.length()) {
+    //         send(connfd, buff.substr(pos, buff.length() - 1).data(), buff.length() - 1 - pos, flags);
+    //         break;
+    //     }
+    //     send(connfd, buff.substr(pos, pos + maxsize).data(), maxsize, flags);
+    // }
+    send(connfd, buff.data(), buff.length(), 0);
 }
 
 int make_named_socket(const char* filename)
