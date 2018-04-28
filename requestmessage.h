@@ -4,26 +4,19 @@
 
 class RequestMessage : private AbstractMessage {
 public:
-    enum RequestType {
-        Unknown,
-        Get,
-        Head,
-        Post
-    };
-    enum ResourceType {
-        UnknownResource,
-        Image,
-        Audio,
-        StopAudio,
-        Camera,
-        Motor,
-        StopMotor
+    enum RequestMethod {
+        GET,
+        Unknown
     };
 
     RequestMessage(const std::string& source_message);
     std::string first_line() const;
-    RequestType request_type() const;
-    ResourceType resource_type() const;
+    RequestMethod request_method() const;
+    std::string uri() const;
+    std::string uri_path() const;
+    std::string uri_query() const;
+    std::string uri_fragment() const;
+    static std::map<std::string, std::string> split_query(const std::string& query);
 
     std::string header() const;
     std::string to_string() const;
@@ -37,9 +30,12 @@ private:
     void _unpack_request_line(const std::string& line);
     void _unpack_header_line(const std::string& line);
 
-    std::string _status_line;
-    RequestType _request_type;
-    ResourceType _resource_type;
+    std::string _request_line;
+    RequestMethod _method;
+    std::string _uri;
+    std::string _uri_path;
+    std::string _uri_query;
+    std::string _uri_fragment;
 
     std::string _header;
     std::string _source;

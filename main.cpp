@@ -19,9 +19,9 @@
 #include "resourcecontrol.h"
 #include "responsemessage.h"
 
-void request_get_image(int connfd);
+void request_image(int connfd);
+void request_audio(int connfd, const std::string& file_path);
 void request_stop_audio(int connfd);
-void request_post_audio(int connfd, const std::string& file_path);
 void request_unknown(int connfd);
 
 void segmetation_send(int connfd, const std::string& buff, size_t maxsize = 4096, int flags = 0);
@@ -90,41 +90,27 @@ void* client_rs_fun(void* arg)
 
     while ((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {
         printf("recv: %s\n", recv_buf); // 打印数据
-        RequestMessage recv_message(recv_buf);
-        switch (recv_message.request_type()) {
-        case RequestMessage::Get:
-            switch (recv_message.resource_type()) {
-            case RequestMessage::Image:
-                request_get_image(connfd);
-                break;
-            case RequestMessage::StopAudio:
-                request_stop_audio(connfd);
-                break;
-            default:
-                request_unknown(connfd);
-                break;
-            }
-            break;
-        case RequestMessage::Post:
-            switch (recv_message.resource_type()) {
-            case RequestMessage::Audio: {
-                std::string filepath;
-                try {
-                    filepath = recv_message.get_header_map().at("filepath");
-                } catch (std::out_of_range& e) {
-                    std::cerr << e.what() << std::endl;
-                    filepath = "";
+        try {
+            RequestMessage recv_message(recv_buf);
+            switch (recv_message.request_method()) {
+            case RequestMessage::GET:
+                if (recv_message.uri_path() == "/image") {
+                    request_image(connfd);
+                } else if (recv_message.uri_path() == "/stop_audio") {
+                    request_stop_audio(connfd);
+                } else if (recv_message.uri_path() == "/audio") {
+                    request_audio(connfd, RequestMessage::split_query(recv_message.uri_query()).at("filepath"));
+                } else {
+                    request_unknown(connfd);
                 }
-                request_post_audio(connfd, filepath);
-            } break;
+                break;
             default:
                 request_unknown(connfd);
                 break;
             }
-            break;
-        default:
+        } catch (HttpException& exp) {
+            std::cerr << exp.what() << std::endl;
             request_unknown(connfd);
-            break;
         }
     }
     aiui_is_connect = false;
@@ -135,7 +121,7 @@ void* client_rs_fun(void* arg)
     return NULL;
 }
 
-void request_get_image(int connfd)
+void request_image(int connfd)
 {
     ResponseMessage send_message;
     send_message.header_map["Content-Type"] = "Image";
@@ -157,7 +143,7 @@ void request_stop_audio(int connfd)
     segmetation_send(connfd, send_message.to_string());
 }
 
-void request_post_audio(int connfd, const std::string& file_path)
+void request_audio(int connfd, const std::string& file_path)
 {
     ResponseMessage send_message;
     send_message.set_status(ResourceControl::play_audio(file_path));

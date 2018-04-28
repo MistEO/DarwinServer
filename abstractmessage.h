@@ -1,9 +1,19 @@
 #pragma once
 
+#include <exception>
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
+class HttpException : public std::exception {
+public:
+    explicit HttpException(const std::string& message);
+    const char* what() const noexcept;
+
+private:
+    std::string _message;
+};
 
 class AbstractMessage {
 public:

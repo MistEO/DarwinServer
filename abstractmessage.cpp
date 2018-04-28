@@ -2,6 +2,17 @@
 
 #include <algorithm>
 
+HttpException::HttpException(const std::string& message)
+    : std::exception()
+    , _message(message)
+{
+}
+
+const char* HttpException::what() const noexcept
+{
+    return _message.c_str();
+}
+
 std::vector<std::string> AbstractMessage::_split_string(const std::string& source, const std::string& c)
 {
     std::string::size_type pos1 = 0, pos2 = source.find(c);
@@ -20,8 +31,7 @@ std::ostream& operator<<(std::ostream& out, const AbstractMessage& amsg)
 {
     out << amsg.first_line()
         << amsg.header()
-        << "\n"
-        << (amsg.data.empty() ? std::string() : "std::string data, size:" + std::to_string(amsg.data.size()))
-        << "\r\n";
+        << "\r\n"
+        << (amsg.data.empty() ? std::string() : "std::string data, size:" + std::to_string(amsg.data.size()));
     return out;
 }

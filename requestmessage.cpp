@@ -13,100 +13,71 @@ RequestMessage::RequestMessage(const std::string& source_message)
 void RequestMessage::_unpack(const std::string& message)
 {
     std::string source(message);
-    //转换为小写
-    // std::transform(source.begin(), source.end(), source.begin(), ::tolower);
-    //按行分割
-    std::vector<std::string> lines(_split_string(source, "\n"));
-
+    // 按行分割
+    std::vector<std::string> lines(_split_string(source, "\r\n"));
     if (lines.size() < 2) {
-        std::cerr << "Request message segmentation error:\n"
-                  << message << std::endl;
-        return;
+        throw HttpException("the message is invaild: " + source);
     }
+
     auto iter = lines.begin();
 
-    _status_line = *iter;
+    _request_line = *iter;
     _unpack_request_line(*iter);
 
     _header.clear();
     header_map.clear();
-    if (++iter == lines.end()) {
-        return;
-    }
-    for (; iter != lines.end() && !iter->empty(); ++iter) {
-        _header += *iter + "\n";
+    for (++iter; !iter->empty(); ++iter) {
+        _header += *iter + "\r\n";
         _unpack_header_line(*iter);
-    }
-
-    data.clear();
-    if (++iter == lines.end()) {
-        return;
-    }
-    for (; iter != lines.end(); ++iter) {
-        if (!data.empty()) {
-            data += "\n";
-        }
-        data += *iter;
     }
 }
 
 void RequestMessage::_unpack_request_line(const std::string& line)
 {
-    //按空格分割
-    std::vector<std::string> request_line(_split_string(line, " "));
-
-    //处理请求类型
-    if (request_line.empty()) {
-        _request_type = RequestType::Unknown;
-        return;
-    }
-    if (request_line.front() == "GET") {
-        _request_type = RequestType::Get;
-    } else if (request_line.front() == "HEAD") {
-        _request_type = RequestType::Head;
-    } else if (request_line.front() == "POST") {
-        _request_type = RequestType::Post;
-    } else {
-        _request_type = RequestType::Unknown;
+    // 按空格分割
+    const std::vector<std::string> request_line(_split_string(line, " "));
+    if (request_line.size() != 3) {
+        throw HttpException("the request line is invaild: " + line);
     }
 
-    //处理资源类型
-    if (request_line.size() < 2) {
-        _resource_type = ResourceType::UnknownResource;
-        return;
-    }
-    if (request_line[1] == "/image") {
-        _resource_type = ResourceType::Image;
-        // } else if (request_line[1] == "Camera") {
-        //     _resource_type = ResourceType::Camera;
-    } else if (request_line[1] == "/audio") {
-        _resource_type = ResourceType::Audio;
-    } else if (request_line[1] == "/stop_audio") {
-        _resource_type = ResourceType::StopAudio;
-    } else if (request_line[1] == "/motor") {
-        _resource_type = ResourceType::Motor;
-    } else if (request_line[1] == "/stop_motor") {
-        _resource_type = ResourceType::StopMotor;
+    // 处理请求类型
+    if (request_line.at(0) == "GET") {
+        _method = RequestMethod::GET;
     } else {
-        _resource_type = ResourceType::UnknownResource;
+        throw HttpException("the request method is invaild: " + request_line.at(0));
     }
 
-    if (request_line.size() < 3) {
-        version = "";
+    // 处理URI
+    _uri = request_line.at(1);
+    auto uri_splited = _split_string(request_line.at(1), "?");
+    if (uri_splited.size() == 2) {
+        _uri_path = uri_splited.at(0);
+        auto after_path_splited = _split_string(uri_splited.at(1), "#");
+        if (after_path_splited.size() == 2) {
+            _uri_query = after_path_splited.at(0);
+            _uri_fragment = after_path_splited.at(1);
+        } else {
+            _uri_query = uri_splited.at(1);
+            _uri_fragment.clear();
+        }
     } else {
-        version = request_line[2];
+        _uri_path = _uri;
+        _uri_query.clear();
+        _uri_fragment.clear();
     }
+
+    // 处理http版本号
+    version = request_line.at(2);
 }
 
 void RequestMessage::_unpack_header_line(const std::string& line)
 {
-    size_t seg_index = line.find(":");
+    size_t seg_index = line.find(": ");
     if (seg_index == std::string::npos) {
-        std::cerr << "Request header segmentation error: " << line << std::endl;
-        return;
+        throw HttpException("the request header segmentation is invalid: " + line);
     }
     std::string key = line.substr(0, seg_index);
-    std::string value = line.substr(seg_index + 1, line.length() - seg_index);
+    std::string value = line.substr(seg_index + 2, line.length() - seg_index);
 
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
     // std::cout << "key:" << pair[0] << " value:" << pair[1] << std::endl;
@@ -115,17 +86,32 @@ void RequestMessage::_unpack_header_line(const std::string& line)
 
 std::string RequestMessage::first_line() const
 {
-    return _status_line;
+    return _request_line;
 }
 
-RequestMessage::RequestType RequestMessage::request_type() const
+RequestMessage::RequestMethod RequestMessage::request_method() const
 {
-    return _request_type;
+    return _method;
 }
 
-RequestMessage::ResourceType RequestMessage::resource_type() const
+std::string RequestMessage::uri() const
 {
-    return _resource_type;
+    return _uri;
+}
+
+std::string RequestMessage::uri_path() const
+{
+    return _uri_path;
+}
+
+std::string RequestMessage::uri_query() const
+{
+    return _uri_query;
+}
+
+std::string RequestMessage::uri_fragment() const
+{
+    return _uri_fragment;
 }
 
 std::string RequestMessage::header() const
@@ -149,4 +135,19 @@ const std::string& RequestMessage::get_version() const
 const std::string& RequestMessage::get_data() const
 {
     return data;
+}
+
+std::map<std::string, std::string> RequestMessage::split_query(const std::string& query)
+{
+    std::map<std::string, std::string> res;
+    auto key_value_vector = _split_string(query, "&");
+    for (auto key_value_string : key_value_vector) {
+        auto key_value = _split_string(key_value_string, "=");
+        if (key_value.size() == 2) {
+            res[key_value.at(0)] = key_value.at(1);
+        } else {
+            throw HttpException("the query is invaild: " + query);
+        }
+    }
+    return res;
 }
