@@ -4,16 +4,16 @@ SOURCE = main.cpp abstractmessage.cpp requestmessage.cpp responsemessage.cpp res
 #可执行文件名称
 TARGET = server.o
 
-#使用g++编译，且以C++11标准
-CXX = g++ -Wall -std=c++11 -g
+CXX = g++
 
-#opencv需要的参数
-CFLAGS = `pkg-config opencv --cflags --libs`
+CXXFLAGS = -Wall -std=c++11 -g
+
+CVCFG = `pkg-config opencv --cflags --libs`
 
 LIBS = -lpthread
 
 TARGET:
-	$(CXX) -o $(TARGET) $(SOURCE) $(CFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCE) $(CVCFG) $(LIBS)
 
 clean:
 	rm -f *.a *.o *.ymal $(TARGET) core *~ *.so *.lo *.swp

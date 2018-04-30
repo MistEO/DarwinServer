@@ -1,8 +1,12 @@
 #pragma once
 
 #include <string>
+#include <cstddef>
 
-#include <opencv2/opencv.hpp>
+#include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/core/core.hpp>
 
 class ResourceControl {
 public:

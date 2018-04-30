@@ -47,7 +47,7 @@ int main()
     struct sockaddr_in server_address;
     bzero(&server_address, sizeof(server_address)); //初始化用NULL填充
     server_address.sin_family = AF_INET; //使用IPv4地址
-    server_address.sin_addr.s_addr = inet_addr("127.0.0.1"); //具体的IP地址
+    server_address.sin_addr.s_addr = htonl(INADDR_ANY); //具体的IP地址
     server_address.sin_port = htons(1680); //端口
     if (bind(socket_fd, (struct sockaddr*)&server_address, sizeof(server_address))) {
         close(socket_fd);

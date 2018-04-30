@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <iterator>
 #include <unistd.h>
+#include <iostream>
 
 cv::VideoCapture ResourceControl::capture(-1);
 const std::string ResourceControl::PlayApp("mplayer");
