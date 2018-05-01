@@ -127,6 +127,9 @@ void* client_rs_fun(void* arg)
         } catch (std::out_of_range& exp) {
 			std::cerr << exp.what() << std::endl;
 			request_unknown(connfd);
+		} catch (std::invalid_argument& exp) {
+			std::cerr << exp.what() << std::endl;
+			request_unknown(connfd);
 		}
     }
     printf("client closed\n");
@@ -178,6 +181,7 @@ void request_unknown(int connfd)
 void request_motor(int connfd, const std::string& url, const std::string& query)
 {
 	ResponseMessage send_message;
+	const auto arg_map = RequestMessage::split_query(query);
 	if (url == "/motor/walk_start") {
 		motion.walk_start();
 		send_message.set_status(200);
@@ -186,7 +190,6 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 		send_message.set_status(200);
 	} else if (url == "/motor/walk") {
 		int x, y, msec;
-		const auto arg_map = RequestMessage::split_query(query);
 		if (arg_map.find("x") != arg_map.end()) {
 			x = std::stoi(arg_map.at("x"));
 		} else {
@@ -203,6 +206,36 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 			msec = 2000;
 		}
 		motion.walk(x, y, msec);
+		send_message.set_status(200);
+	} else if (url == "/motor/fallup") {
+		motion.fall_up();
+		send_message.set_status(200);
+	} else if (url == "/motor/head") {
+		int x, y, home;
+		if (arg_map.find("x") != arg_map.end()) {
+			x = std::stoi(arg_map.at("x"));
+		} else {
+			x = 0;
+		}
+		if (arg_map.find("y") != arg_map.end()) {
+			y = std::stoi(arg_map.at("y"));
+		} else {
+			y = 60;
+		}
+		if (arg_map.find("home") != arg_map.end()) {
+			home = std::stoi(arg_map.at("home"));
+		} else {
+			home = 1;
+		}
+		motion.head_move(x, y, home);
+		send_message.set_status(200);
+	} else if (url.find("/motor/action/") == 0) {
+		int index = std::stoi(url.substr(std::string("/motor/action/").size(), url.size()));
+		std::string mp3;
+		if (arg_map.find("audio") != arg_map.end()) {
+			mp3 = arg_map.at("audio");
+		}
+		motion.action(index, mp3);
 		send_message.set_status(200);
 	} else {
 		send_message.set_status(400);

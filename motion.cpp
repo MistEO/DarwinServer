@@ -39,15 +39,15 @@ Motion::Motion() :
 	motion_timer = new LinuxMotionTimer(MotionManager::GetInstance());
 	motion_timer->Start();
 	MotionManager::GetInstance()->SetEnable(true);
-	Action::GetInstance()->m_Joint.SetEnableBody(true, true);
 	//Slowly stand up 
+	Action::GetInstance()->m_Joint.SetEnableBody(true, true);
 	Action::GetInstance()->Start(9);
 	while(Action::GetInstance()->IsRunning() == true)
 		usleep(8000);
 
-	Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
-	Walking::GetInstance()->m_Joint.SetEnableBodyWithoutHead(true, true);
-	Head::GetInstance()->MoveByAngle(0, 60);
+	//Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
+	//Walking::GetInstance()->m_Joint.SetEnableBodyWithoutHead(true, true);
+	//Head::GetInstance()->MoveByAngle(0, 60);
 }
 
 Motion::~Motion()
@@ -66,6 +66,13 @@ Motion::~Motion()
 
 void Motion::walk_start()
 {
+	using namespace Robot;
+	//Slowly stand up 
+	Action::GetInstance()->m_Joint.SetEnableBody(true, true);
+	Action::GetInstance()->Start(9);
+	while(Action::GetInstance()->IsRunning() == true)
+		usleep(8000);
+	Walking::GetInstance()->m_Joint.SetEnableBodyWithoutHead(true, true);
 	Robot::Walking::GetInstance()->Start();
 }
 
@@ -137,6 +144,7 @@ bool Motion::fall_up()
 
 void Motion::head_move(int x, int y, bool home)
 {
+	Robot::Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
 	#ifndef NDEBUG
 		printf("Head MoveByAngle: %d, %d\n", x, y);
 	#endif
@@ -159,7 +167,4 @@ void Motion::action(int index, const std::string & audio)
 	}
 
 	while(Action::GetInstance()->IsRunning() == 1) usleep(8000);
-
-	Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
-	Walking::GetInstance()->m_Joint.SetEnableBodyWithoutHead(true, true);
 }
