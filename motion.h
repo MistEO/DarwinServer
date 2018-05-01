@@ -33,6 +33,7 @@ private:
 	Robot::LinuxCM730 linux_cm730;
 	Robot::CM730 cm730;
 	Robot::LinuxMotionTimer *motion_timer;
+	static Motion unique_instance;
 };
 
 #define motion Motion::ins()

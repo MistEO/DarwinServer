@@ -6,8 +6,20 @@
 #include <unistd.h>
 #include <iostream>
 
-cv::VideoCapture ResourceControl::capture(-1);
+//cv::VideoCapture ResourceControl::capture(-1);
 const std::string ResourceControl::PlayApp("mplayer");
+
+ResourceControl & ResourceControl::ins()
+{
+	static ResourceControl instance;
+	instance.capture.open(-1);
+	return instance;
+}
+
+ResourceControl::~ResourceControl()
+{
+	capture.release();
+}
 
 int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
 {

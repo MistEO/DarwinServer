@@ -1,3 +1,4 @@
+#ifdef DARWIN
 #include "motion.h"
 #include <unistd.h>
 #include <cassert>
@@ -13,9 +14,10 @@ const char * MOTION_FILE_PATH = "/darwin/Data/motion_4096.bin";
 
 #define NDEBUG
 
+Motion Motion::unique_instance;
+
 Motion& Motion::ins()
 {
-	static Motion unique_instance;
 	return unique_instance;
 }
 
@@ -41,7 +43,7 @@ Motion::Motion() :
 	MotionManager::GetInstance()->SetEnable(true);
 	//Slowly stand up 
 	Action::GetInstance()->m_Joint.SetEnableBody(true, true);
-	Action::GetInstance()->Start(9);
+	Action::GetInstance()->Start(15);
 	while(Action::GetInstance()->IsRunning() == true)
 		usleep(8000);
 
@@ -57,7 +59,7 @@ Motion::~Motion()
 	while (Walking::GetInstance()->IsRunning())
 		usleep(8 * 1000);
 	MotionManager::GetInstance()->RemoveModule((MotionModule*)Walking::GetInstance());
-	Action::GetInstance()->Start(9);
+	Action::GetInstance()->Start(15);
 	while (Action::GetInstance()->IsRunning())
 		usleep(8 * 1000);
 	delete motion_timer;		
@@ -168,3 +170,4 @@ void Motion::action(int index, const std::string & audio)
 
 	while(Action::GetInstance()->IsRunning() == 1) usleep(8000);
 }
+#endif

@@ -3,8 +3,9 @@ OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
 TARGET = server
 
 CXX = g++
-CXXFLAGS = -Wall -std=c++11
-DARWIN_CXXFLAGS = -Wall -std=c++98
+EXFLAGS = 
+CXXFLAGS = -Wall -std=c++11 $(EXFLAGS)
+DARWIN_CXXFLAGS = -Wall -std=c++98 $(EXFLAGS)
 
 DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
 DARWIN_LIB = /darwin/Linux/lib/darwin.a

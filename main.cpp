@@ -19,7 +19,10 @@
 #include "requestmessage.h"
 #include "resourcecontrol.h"
 #include "responsemessage.h"
+
+#ifdef DARWIN
 #include "motion.h"
+#endif
 
 void request_image(int connfd);
 void request_audio(int connfd, const std::string& file_path);
@@ -144,7 +147,7 @@ void request_image(int connfd)
     ResponseMessage send_message;
     send_message.header_map["Content-Type"] = "image";
     send_message.set_status(
-        ResourceControl::get_image(
+        rsrc.get_image(
             send_message.data,
             send_message.header_map["Cols"],
             send_message.header_map["Rows"],
@@ -157,7 +160,7 @@ void request_image(int connfd)
 void request_stop_audio(int connfd)
 {
     ResponseMessage send_message;
-    send_message.set_status(ResourceControl::stop_audio());
+    send_message.set_status(rsrc.stop_audio());
     std::cout << "send: " << send_message.to_string() << std::endl;
     send_string(connfd, send_message.to_string());
 }
@@ -165,7 +168,7 @@ void request_stop_audio(int connfd)
 void request_audio(int connfd, const std::string& file_path)
 {
     ResponseMessage send_message;
-    send_message.set_status(ResourceControl::play_audio(file_path));
+    send_message.set_status(rsrc.play_audio(file_path));
     std::cout << "send: " << send_message.to_string() << std::endl;
     send_string(connfd, send_message.to_string());
 }
@@ -183,10 +186,18 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 	ResponseMessage send_message;
 	const auto arg_map = RequestMessage::split_query(query);
 	if (url == "/motor/walk_start") {
+		#ifdef DARWIN
 		motion.walk_start();
+		#else
+		std::cout << "walk start" << std::endl;
+		#endif
 		send_message.set_status(200);
 	} else if (url == "/motor/walk_stop") {
+		#ifdef DARWIN
 		motion.walk_stop();
+		#else
+		std::cout << "walk stop" << std::endl;
+		#endif
 		send_message.set_status(200);
 	} else if (url == "/motor/walk") {
 		int x, y, msec;
@@ -205,10 +216,18 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 		} else {
 			msec = 2000;
 		}
+		#ifdef DARWIN
 		motion.walk(x, y, msec);
+		#else
+		std::cout << "walk, x=" << x << " y=" << y << " msec=" << msec << std::endl;
+		#endif
 		send_message.set_status(200);
-	} else if (url == "/motor/fallup") {
+	} else if (url == "/motor/fall_up") {
+		#ifdef DARWIN
 		motion.fall_up();
+		#else
+		std::cout << "fall up" << std::endl;
+		#endif
 		send_message.set_status(200);
 	} else if (url == "/motor/head") {
 		int x, y, home;
@@ -227,7 +246,11 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 		} else {
 			home = 1;
 		}
+		#ifdef DARWIN
 		motion.head_move(x, y, home);
+		#else
+		std::cout << "head, x=" << x << " y=" << y << " home=" << home << std::endl;
+		#endif
 		send_message.set_status(200);
 	} else if (url.find("/motor/action/") == 0) {
 		int index = std::stoi(url.substr(std::string("/motor/action/").size(), url.size()));
@@ -235,7 +258,11 @@ void request_motor(int connfd, const std::string& url, const std::string& query)
 		if (arg_map.find("audio") != arg_map.end()) {
 			mp3 = arg_map.at("audio");
 		}
+		#ifdef DARWIN
 		motion.action(index, mp3);
+		#else
+		std::cout << "action:" << index << " , audio:" << mp3 << std::endl;
+		#endif
 		send_message.set_status(200);
 	} else {
 		send_message.set_status(400);
