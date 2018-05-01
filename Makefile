@@ -3,13 +3,13 @@ OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
 TARGET = server
 
 CXX = g++
-CXXFLAGS = -O2 -DLINUX -Wall -std=c++11
-DARWIN_CXXFLAGS = -O2 -DLINUX -Wall -std=c++98
+CXXFLAGS = -Wall -std=c++11
+DARWIN_CXXFLAGS = -Wall -std=c++98
 
 DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
 DARWIN_LIB = /darwin/Linux/lib/darwin.a
 OPENCV = `pkg-config opencv --cflags --libs`
-LIBS = -lpthread -ljpeg -lrt
+LIBS = -lpthread
 
 TARGET: darwin.a $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(DARWIN_LIB) $(OPENCV) $(LIBS)

@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include <iostream>
 #include <map>
@@ -31,13 +32,16 @@ void* client_rs_fun(void* arg);
 int make_named_socket(const char* filename);
 void* lclient_fun(void* arg);
 
-int aiui_scoket_fd;
-volatile bool aiui_is_connect;
+void got_signal(int);
 
 int main()
 {
-    aiui_is_connect = false;
-    aiui_scoket_fd = make_named_socket("/tmp/Aiui.domain");
+	signal(SIGABRT, got_signal);
+	signal(SIGTERM, got_signal);
+	signal(SIGQUIT, got_signal);
+	signal(SIGINT,  got_signal);
+
+    int aiui_scoket_fd = make_named_socket("/tmp/Aiui.domain");
     pthread_t ltid;
     pthread_create(&ltid, NULL, lclient_fun, &aiui_scoket_fd);
     pthread_detach(ltid);
@@ -84,6 +88,11 @@ int main()
     return 0;
 }
 
+void got_signal(int)
+{
+	exit(0);
+}
+
 void* client_rs_fun(void* arg)
 {
     int recv_len = 0;
@@ -120,7 +129,6 @@ void* client_rs_fun(void* arg)
 			request_unknown(connfd);
 		}
     }
-    aiui_is_connect = false;
     printf("client closed\n");
     //关闭套接字
     close(connfd);
@@ -281,7 +289,6 @@ void* lclient_fun(void* arg)
     if (client_sock < 0) {
         perror("accept");
     } else {
-        aiui_is_connect = true;
         std::cout << "Accept local socket" << std::endl;
     }
 
