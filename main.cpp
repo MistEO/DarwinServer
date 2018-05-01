@@ -131,7 +131,8 @@ void request_image(int connfd)
             send_message.header_map["Cols"],
             send_message.header_map["Rows"],
             send_message.header_map["Step"]));
-    std::cout << "send: " << send_message << std::endl;
+	send_message.header_map["Content-Length"] = std::to_string(send_message.data.length());
+	std::cout << "send: " << send_message << std::endl;
     send_string(connfd, send_message.to_string() + "\r\n");
 }
 

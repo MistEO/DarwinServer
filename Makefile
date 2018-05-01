@@ -1,8 +1,7 @@
-#源文件
-SOURCE = main.cpp abstractmessage.cpp requestmessage.cpp responsemessage.cpp resourcecontrol.cpp
+SOURCES = $(wildcard *.cpp)
+OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
 
-#可执行文件名称
-TARGET = server.o
+TARGET = server
 
 CXX = g++
 
@@ -12,15 +11,15 @@ CVCFG = `pkg-config opencv --cflags --libs`
 
 LIBS = -lpthread
 
-TARGET:
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(SOURCE) $(CVCFG) $(LIBS)
+TARGET: $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(CVCFG) $(LIBS)
 
+resourcecontrol.o: resourcecontrol.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $< $(CVCFG)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+.PHONY: clean
 clean:
 	rm -f *.a *.o *.ymal $(TARGET) core *~ *.so *.lo *.swp
-
-# useful to make a backup "make tgz"
-tgz:
-	clean
-	mkdir -p backups
-	tar czvf ./backups_`date +"%Y_%m_%d_%H.%M.%S"`.tgz.gz --exclude backups *
-	rm -rf backups
