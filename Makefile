@@ -1,25 +1,37 @@
 SOURCES = $(wildcard *.cpp)
 OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
-
 TARGET = server
 
 CXX = g++
+CXXFLAGS = -O2 -DLINUX -Wall -std=c++11
+DARWIN_CXXFLAGS = -O2 -DLINUX -Wall -std=c++98
 
-CXXFLAGS = -Wall -std=c++11 -g
+DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
+DARWIN_LIB = /darwin/Linux/lib/darwin.a
+OPENCV = `pkg-config opencv --cflags --libs`
+LIBS = -lpthread -ljpeg -lrt
 
-CVCFG = `pkg-config opencv --cflags --libs`
+TARGET: darwin.a $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(DARWIN_LIB) $(OPENCV) $(LIBS)
 
-LIBS = -lpthread
+darwin.a:
+	make -C /darwin/Linux/build
 
-TARGET: $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(CVCFG) $(LIBS)
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
+
+motion.o: motion.cpp
+	$(CXX) $(DARWIN_CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
 
 resourcecontrol.o: resourcecontrol.cpp
-	$(CXX) $(CXXFLAGS) -o $@ -c $< $(CVCFG)
+	$(CXX) $(CXXFLAGS) -o $@ -c $< $(OPENCV)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-.PHONY: clean
+.PHONY: clean cleanlib
 clean:
 	rm -f *.a *.o *.ymal $(TARGET) core *~ *.so *.lo *.swp
+
+cleanlib:
+	make -C /darwin/Linux/build clean

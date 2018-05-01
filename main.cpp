@@ -18,10 +18,12 @@
 #include "requestmessage.h"
 #include "resourcecontrol.h"
 #include "responsemessage.h"
+#include "motion.h"
 
 void request_image(int connfd);
 void request_audio(int connfd, const std::string& file_path);
 void request_stop_audio(int connfd);
+void request_motor(int connfd, const std::string& url, const std::string& query);
 void request_unknown(int connfd);
 
 void send_string(int connfd, const std::string& buff);
@@ -100,7 +102,9 @@ void* client_rs_fun(void* arg)
                     request_stop_audio(connfd);
                 } else if (recv_message.uri_path() == "/audio") {
                     request_audio(connfd, RequestMessage::split_query(recv_message.uri_query()).at("filepath"));
-                } else {
+                } else if (recv_message.uri_path().find("/motor") == 0) {
+					request_motor(connfd, recv_message.uri_path(), recv_message.uri_query());
+				} else {
                     request_unknown(connfd);
                 }
                 break;
@@ -111,7 +115,10 @@ void* client_rs_fun(void* arg)
         } catch (HttpException& exp) {
             std::cerr << exp.what() << std::endl;
             request_unknown(connfd);
-        }
+        } catch (std::out_of_range& exp) {
+			std::cerr << exp.what() << std::endl;
+			request_unknown(connfd);
+		}
     }
     aiui_is_connect = false;
     printf("client closed\n");
@@ -139,7 +146,7 @@ void request_image(int connfd)
 void request_stop_audio(int connfd)
 {
     ResponseMessage send_message;
-    send_message.set_status(ResourceControl::get_stop_audio());
+    send_message.set_status(ResourceControl::stop_audio());
     std::cout << "send: " << send_message.to_string() << std::endl;
     send_string(connfd, send_message.to_string());
 }
@@ -158,6 +165,42 @@ void request_unknown(int connfd)
     send_message.set_status(400);
     std::cout << "send: " << send_message.to_string() << std::endl;
     send_string(connfd, send_message.to_string());
+}
+
+void request_motor(int connfd, const std::string& url, const std::string& query)
+{
+	ResponseMessage send_message;
+	if (url == "/motor/walk_start") {
+		motion.walk_start();
+		send_message.set_status(200);
+	} else if (url == "/motor/walk_stop") {
+		motion.walk_stop();
+		send_message.set_status(200);
+	} else if (url == "/motor/walk") {
+		int x, y, msec;
+		const auto arg_map = RequestMessage::split_query(query);
+		if (arg_map.find("x") != arg_map.end()) {
+			x = std::stoi(arg_map.at("x"));
+		} else {
+			x = 5;
+		}
+		if (arg_map.find("y") != arg_map.end()) {
+			y = std::stoi(arg_map.at("y"));
+		} else {
+			y = 0;
+		}
+		if (arg_map.find("msec") != arg_map.end()) {
+			msec = std::stoi(arg_map.at("msec"));
+		} else {
+			msec = 2000;
+		}
+		motion.walk(x, y, msec);
+		send_message.set_status(200);
+	} else {
+		send_message.set_status(400);
+	}
+	std::cout << "send: " << send_message.to_string() << std::endl;
+	send_string(connfd, send_message.to_string());
 }
 
 void send_string(int connfd, const std::string& buff)

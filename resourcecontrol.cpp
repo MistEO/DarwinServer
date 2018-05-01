@@ -40,7 +40,7 @@ int ResourceControl::get_image(std::string& data, std::string& cols, std::string
     return return_code;
 }
 
-int ResourceControl::get_stop_audio()
+int ResourceControl::stop_audio()
 {
     const std::string kill_cmd = "killall -9 " + PlayApp;
     std::cout << kill_cmd << std::endl;
