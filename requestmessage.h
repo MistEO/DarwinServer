@@ -1,6 +1,7 @@
 #pragma once
 
 #include "abstractmessage.h"
+#include "responsemessage.h"
 
 class RequestMessage : private AbstractMessage {
 public:
@@ -9,7 +10,7 @@ public:
         Unknown
     };
 
-    RequestMessage(const std::string& source_message);
+    RequestMessage(int connfd, const std::string& source_message);
     std::string first_line() const;
     RequestMethod request_method() const;
     std::string uri() const;
@@ -24,11 +25,17 @@ public:
     const std::map<std::string, std::string>& get_header_map() const;
     const std::string& get_version() const;
     const std::string& get_data() const;
+    const int& get_connfd() const;
+
+    int reply(const ResponseMessage& response) const;
+    int reply(int status, const std::string& data = std::string()) const;
 
 private:
     void _unpack(const std::string& message);
     void _unpack_request_line(const std::string& line);
     void _unpack_header_line(const std::string& line);
+
+    int _connfd = -1;
 
     std::string _request_line;
     RequestMethod _method;

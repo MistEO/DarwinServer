@@ -2,23 +2,23 @@
 
 #include <algorithm>
 #include <fcntl.h>
+#include <iostream>
 #include <iterator>
 #include <unistd.h>
-#include <iostream>
 
 //cv::VideoCapture ResourceControl::capture(-1);
 const std::string ResourceControl::PlayApp("mplayer");
 
-ResourceControl & ResourceControl::ins()
+ResourceControl& ResourceControl::ins()
 {
-	static ResourceControl instance;
-	instance.capture.open(-1);
-	return instance;
+    static ResourceControl instance;
+    instance.capture.open(-1);
+    return instance;
 }
 
 ResourceControl::~ResourceControl()
 {
-	capture.release();
+    capture.release();
 }
 
 int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
@@ -29,7 +29,7 @@ int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& ste
     cv::Mat frame;
     capture >> frame;
     if (frame.empty()) {
-        return 403;
+        return 404;
     }
     cv::Mat rgb_frame;
     cv::cvtColor(frame, rgb_frame, CV_BGR2RGB);
