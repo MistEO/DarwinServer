@@ -19,7 +19,7 @@ void path_parse(const RequestMessage& request)
                 request_image(request);
             } else if (request.uri_path() == "/audio") {
                 request_audio(request);
-            } else if (request.uri_path() == "/stop_audio") {
+            } else if (request.uri_path() == "/audio_stop") {
                 request_stop_audio(request);
             } else if (request.uri_path().find("/motor") == 0) {
                 request_motor(request);

@@ -18,7 +18,7 @@
     - 若文件不存在或不可读，则响应`500 Internal Server Error`
     - 使用方法举例：<http://127.0.0.1:1680/audio?filepath=/darwin/Data/mp3/Introduction.mp3>
 
-- [`/stop_audio`](/stop_audio)
+- [`/audio_stop`](/audio_stop)
     - 停止播放音频文件
 
 - [`/motor/walk_start`](/motor/walk_start)
