@@ -16,8 +16,7 @@ TARGET: prepare $(OBJS)# darwin.a
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(DARWIN_LIB) $(OPENCV) $(LIBS)
 
 prepare:
-	@echo $(OBJS)
-	mkdir -p $(OBJSDIR)
+	@mkdir -p $(OBJSDIR)
 
 # darwin.a:
 # 	make -C /darwin/Linux/build
@@ -34,7 +33,7 @@ $(OBJSDIR)/resourcecontrol.o: resourcecontrol.cpp
 $(OBJSDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-.PHONY: rebuild clean #  cleanlib
+.PHONY: clean #  cleanlib
 clean:
 	rm -rf $(TARGET) $(OBJS)
 

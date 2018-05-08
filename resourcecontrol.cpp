@@ -12,7 +12,9 @@ const std::string ResourceControl::PlayApp("mplayer");
 ResourceControl& ResourceControl::ins()
 {
     static ResourceControl instance;
-    instance.capture.open(-1);
+    if (!instance.capture.isOpened()) {
+        instance.capture.open(-1);
+    }
     return instance;
 }
 
@@ -21,15 +23,17 @@ ResourceControl::~ResourceControl()
     capture.release();
 }
 
-int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
+bool ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
 {
     if (!capture.isOpened()) {
-        return 404;
+        return false;
     }
     cv::Mat frame;
+    capture_mutex.lock();
     capture >> frame;
+    capture_mutex.unlock();
     if (frame.empty()) {
-        return 404;
+        return false;
     }
     cv::Mat rgb_frame;
     cv::cvtColor(frame, rgb_frame, CV_BGR2RGB);
@@ -39,34 +43,34 @@ int ResourceControl::get_image(std::string& data, int& cols, int& rows, int& ste
     cols = rgb_frame.cols;
     rows = rgb_frame.rows;
     step = rgb_frame.step1();
-    return 200;
+    return true;
 }
 
-int ResourceControl::get_image(std::string& data, std::string& cols, std::string& rows, std::string& step)
+bool ResourceControl::get_image(std::string& data, std::string& cols, std::string& rows, std::string& step)
 {
     int icols, irows, istep;
-    int return_code = get_image(data, icols, irows, istep);
+    bool ret = get_image(data, icols, irows, istep);
     cols = std::to_string(icols);
     rows = std::to_string(irows);
     step = std::to_string(istep);
-    return return_code;
+    return ret;
 }
 
-int ResourceControl::stop_audio()
+bool ResourceControl::stop_audio()
 {
     const std::string kill_cmd = "killall -9 " + PlayApp;
     std::cout << kill_cmd << std::endl;
     if (system(kill_cmd.c_str())) {
         perror(kill_cmd.c_str());
-        return 500;
+        return false;
     }
-    return 200;
+    return true;
 }
 
-int ResourceControl::play_audio(const std::string& file_path)
+bool ResourceControl::play_audio(const std::string& file_path)
 {
     if (file_path.empty() || access(file_path.c_str(), F_OK | W_OK)) {
-        return 404;
+        return false;
     }
     const std::string hide_output_cmd = " > /dev/null 2>&1";
     // int format_pos = file_path.find_last_of(".");
@@ -92,7 +96,7 @@ int ResourceControl::play_audio(const std::string& file_path)
     // system("play net_audio.mp3 > /dev/null 2>&1");
     if (system(play_audio_cmd.c_str())) {
         perror(play_audio_cmd.c_str());
-        return 500;
+        return false;
     }
-    return 200;
+    return true;
 }

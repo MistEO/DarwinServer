@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <mutex>
 #include <string>
 
 #include <opencv/cv.h>
@@ -13,15 +14,16 @@ public:
     static const std::string PlayApp;
     static ResourceControl& ins();
     ~ResourceControl();
-    /// 通过参数传值，返回值为错误码
-    int get_image(std::string& data, int& cols, int& rows, int& step);
-    int get_image(std::string& data, std::string& cols, std::string& rows, std::string& step);
-    int stop_audio();
-    int play_audio(const std::string& file_path);
+    /// 通过参数传值
+    bool get_image(std::string& data, int& cols, int& rows, int& step);
+    bool get_image(std::string& data, std::string& cols, std::string& rows, std::string& step);
+    bool stop_audio();
+    bool play_audio(const std::string& file_path);
 
 private:
     ResourceControl() = default;
     cv::VideoCapture capture;
+    std::mutex capture_mutex;
 };
 
 #define resource ResourceControl::ins()

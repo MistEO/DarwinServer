@@ -3,10 +3,13 @@
 #include <iostream>
 #include <sys/socket.h>
 
-ResponseMessage::ResponseMessage(int status, const std::string& data)
+ResponseMessage::ResponseMessage(int status, const std::string& text)
 {
     set_status(status);
-    set_data(data);
+    set_data(text);
+    if (!text.empty()) {
+        _header_map["Content-Type"] = "text";
+    }
 }
 
 std::string ResponseMessage::first_line() const
@@ -31,6 +34,9 @@ void ResponseMessage::set_status(const int status)
         break;
     case 404:
         _status_name = "Not Found";
+        break;
+    case 405:
+        _status_name = "Method Not Allowed";
         break;
     case 500:
         _status_name = "Internal Server Error";

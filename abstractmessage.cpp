@@ -29,9 +29,18 @@ std::vector<std::string> AbstractMessage::_split_string(const std::string& sourc
 
 std::ostream& operator<<(std::ostream& out, const AbstractMessage& amsg)
 {
+    std::string data_string;
+    if (amsg._header_map.find("Content-Type") != amsg._header_map.end()
+        && amsg._header_map.at("Content-Type") == "text") {
+        data_string = amsg._data;
+    } else if (amsg._data.empty()) {
+        ;
+    } else {
+        data_string = "std::string data, size:" + std::to_string(amsg._data.size());
+    }
     out << amsg.first_line()
         << amsg.header()
         << "\r\n"
-        << (amsg._data.empty() ? std::string() : "std::string data, size:" + std::to_string(amsg._data.size()));
+        << data_string;
     return out;
 }

@@ -150,9 +150,9 @@ int RequestMessage::reply(const ResponseMessage& response) const
     return response.send_to(_connfd);
 }
 
-int RequestMessage::reply(int status, const std::string& data) const
+int RequestMessage::reply(int status, const std::string& text) const
 {
-    ResponseMessage response(status, data);
+    ResponseMessage response(status, text);
     return reply(response);
 }
 

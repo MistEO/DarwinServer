@@ -1,9 +1,16 @@
 #ifndef MOTION_H
 #define MOTION_H
 
+/* MOTION，达尔文电机控制
+ * 达尔文的电机控制库只能使用stdc++98标准编译
+ * 所以该文件也只能使用stdc++98标准
+ */
+
 #include <LinuxCM730.h>
 
 #include <string>
+
+#include <bits/pthreadtypes.h>
 
 class minIni;
 namespace Robot {
@@ -33,6 +40,7 @@ private:
     Robot::CM730 cm730;
     Robot::LinuxMotionTimer* motion_timer;
     static Motion unique_instance;
+    pthread_mutex_t mlock;
 };
 
 #define motion Motion::ins()

@@ -28,7 +28,7 @@ public:
     const int& get_connfd() const;
 
     int reply(const ResponseMessage& response) const;
-    int reply(int status, const std::string& data = std::string()) const;
+    int reply(int status, const std::string& text = std::string()) const;
 
 private:
     void _unpack(const std::string& message);
