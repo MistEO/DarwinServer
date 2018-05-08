@@ -12,7 +12,10 @@ void path_parse(const RequestMessage& request)
     try {
         switch (request.request_method()) {
         case RequestMessage::GET:
-            if (request.uri_path() == "/image") {
+            if (request.uri_path() == "/"
+                || request.uri_path() == "/help") {
+                request_help(request);
+            } else if (request.uri_path() == "/image") {
                 request_image(request);
             } else if (request.uri_path() == "/audio") {
                 request_audio(request);
@@ -37,6 +40,19 @@ void path_parse(const RequestMessage& request)
     } catch (std::invalid_argument& exp) {
         std::cerr << exp.what() << std::endl;
         request.reply(400, "400 Bad Request");
+    }
+}
+
+void request_help(const RequestMessage& request)
+{
+    std::string data;
+    if (resource.get_file("README.html", data)) {
+        ResponseMessage response(200);
+        response.header_map()["Content-Type"] = "text/html";
+        response.set_data(data);
+        request.reply(response);
+    } else {
+        request.reply(500, "500 Internal Server Error");
     }
 }
 

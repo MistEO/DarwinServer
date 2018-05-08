@@ -2,8 +2,11 @@
 
 #include <algorithm>
 #include <fcntl.h>
+#include <fstream>
 #include <iostream>
 #include <iterator>
+#include <streambuf>
+#include <string>
 #include <unistd.h>
 
 //cv::VideoCapture ResourceControl::capture(-1);
@@ -69,28 +72,10 @@ bool ResourceControl::stop_audio()
 
 bool ResourceControl::play_audio(const std::string& file_path)
 {
-    if (file_path.empty() || access(file_path.c_str(), F_OK | W_OK)) {
+    if (file_path.empty() || access(file_path.c_str(), F_OK | R_OK)) {
         return false;
     }
     const std::string hide_output_cmd = " > /dev/null 2>&1";
-    // int format_pos = file_path.find_last_of(".");
-    // std::string path_without_format = file_path.substr(0, format_pos);
-    // std::string format = file_path.substr(format_pos, file_path.length() - format_pos);
-    // if (format == ".m4a")
-    // {
-    //     // commond play not support m4a file
-    //     remove((path_without_format + ".mp3").c_str());
-    //     std::string cvt_format_cmd = "avconv -i " + file_path + " " + path_without_format + ".mp3" + hide_output_cmd;
-    //     std::cout << cvt_format_cmd << std::endl;
-    //     // system("avconv -i net_audio.m4a net_audio.mp3 > /dev/null 2>&1");
-    //     if (system(cvt_format_cmd.c_str()))
-    //     {
-    //         remove((path_without_format + ".mp3").c_str());
-    //         perror(cvt_format_cmd.c_str());
-    //         return 500;
-    //     }
-    //     format = ".mp3";
-    // }
     std::string play_audio_cmd = PlayApp + " " + file_path + hide_output_cmd + " &";
     std::cout << play_audio_cmd << std::endl;
     // system("play net_audio.mp3 > /dev/null 2>&1");
@@ -98,5 +83,17 @@ bool ResourceControl::play_audio(const std::string& file_path)
         perror(play_audio_cmd.c_str());
         return false;
     }
+    return true;
+}
+
+bool ResourceControl::get_file(const std::string& file_path, std::string& data)
+{
+    if (file_path.empty() || access(file_path.c_str(), F_OK | R_OK)) {
+        return false;
+    }
+    std::ifstream file(file_path);
+    std::string str((std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>());
+    data = str;
     return true;
 }

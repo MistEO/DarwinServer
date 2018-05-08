@@ -19,6 +19,7 @@ public:
     bool get_image(std::string& data, std::string& cols, std::string& rows, std::string& step);
     bool stop_audio();
     bool play_audio(const std::string& file_path);
+    bool get_file(const std::string& file_path, std::string& data);
 
 private:
     ResourceControl() = default;
