@@ -76,9 +76,19 @@ bool ResourceControl::play_audio(const std::string& file_path)
         return false;
     }
     const std::string hide_output_cmd = " > /dev/null 2>&1";
-    std::string play_audio_cmd = PlayApp + " " + file_path + hide_output_cmd + " &";
+    std::string dst_filepath = file_path;
+    auto replaceAll = [](std::string& str,
+                          const std::string& oldStr,
+                          const std::string& newStr) {
+        std::string::size_type pos = 0u;
+        while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+            str.replace(pos, oldStr.length(), newStr);
+            pos += newStr.length();
+        }
+    };
+    replaceAll(dst_filepath, " ", "\\ ");
+    std::string play_audio_cmd = PlayApp + " " + dst_filepath + hide_output_cmd + " &";
     std::cout << play_audio_cmd << std::endl;
-    // system("play net_audio.mp3 > /dev/null 2>&1");
     if (system(play_audio_cmd.c_str())) {
         perror(play_audio_cmd.c_str());
         return false;

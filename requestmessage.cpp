@@ -50,7 +50,18 @@ void RequestMessage::_unpack_request_line(const std::string& line)
 
     // 处理URI
     _uri = request_line.at(1);
-    auto uri_splited = _split_string(request_line.at(1), "?");
+    auto replaceAll = [](std::string& str,
+                          const std::string& oldStr,
+                          const std::string& newStr) {
+        std::string::size_type pos = 0u;
+        while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+            str.replace(pos, oldStr.length(), newStr);
+            pos += newStr.length();
+        }
+    };
+    replaceAll(_uri, "%20", " ");
+    auto uri_splited
+        = _split_string(_uri, "?");
     if (uri_splited.size() == 2) {
         _uri_path = uri_splited.at(0);
         auto after_path_splited = _split_string(uri_splited.at(1), "#");

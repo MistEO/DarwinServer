@@ -94,60 +94,49 @@ void request_motor(const RequestMessage& request)
 {
     const auto arg_map = RequestMessage::split_query(request.uri_query());
     if (request.uri_path() == "/motor/walk_start") {
-        motion.walk_start();
-        request.reply(200, "200 Ok");
+        if (motion.walk_start()) {
+            request.reply(200, "200 Ok");
+        } else {
+            request.reply(500, "500 Internal Server Error");
+        }
     } else if (request.uri_path() == "/motor/walk_stop") {
-        motion.walk_stop();
-        request.reply(200, "200 Ok");
+        if (motion.walk_stop()) {
+            request.reply(200, "200 Ok");
+        } else {
+            request.reply(500, "500 Internal Server Error");
+        }
     } else if (request.uri_path() == "/motor/walk") {
-        int x, y, msec;
-        if (arg_map.find("x") != arg_map.end()) {
-            x = std::stoi(arg_map.at("x"));
+        int x = arg_map.find("x") != arg_map.end() ? std::stoi(arg_map.at("x")) : 5;
+        int y = arg_map.find("y") != arg_map.end() ? std::stoi(arg_map.at("y")) : 0;
+        int msec = arg_map.find("msec") != arg_map.end() ? std::stoi(arg_map.at("msec")) : 2000;
+        if (motion.walk(x, y, msec)) {
+            request.reply(200, "200 Ok");
         } else {
-            x = 5;
+            request.reply(500, "500 Internal Server Error");
         }
-        if (arg_map.find("y") != arg_map.end()) {
-            y = std::stoi(arg_map.at("y"));
-        } else {
-            y = 0;
-        }
-        if (arg_map.find("msec") != arg_map.end()) {
-            msec = std::stoi(arg_map.at("msec"));
-        } else {
-            msec = 2000;
-        }
-        motion.walk(x, y, msec);
-        request.reply(200, "200 Ok");
     } else if (request.uri_path() == "/motor/fall_up") {
-        motion.fall_up();
-        request.reply(200, "200 Ok");
+        if (motion.fall_up()) {
+            request.reply(200, "200 Ok");
+        } else {
+            request.reply(500, "500 Internal Server Error");
+        }
     } else if (request.uri_path() == "/motor/head") {
-        int x, y, home;
-        if (arg_map.find("x") != arg_map.end()) {
-            x = std::stoi(arg_map.at("x"));
+        int x = arg_map.find("x") != arg_map.end() ? std::stoi(arg_map.at("x")) : 0;
+        int y = arg_map.find("y") != arg_map.end() ? std::stoi(arg_map.at("y")) : 60;
+        int home = arg_map.find("home") != arg_map.end() ? std::stoi(arg_map.at("home")) : 1;
+        if (motion.head_move(x, y, home)) {
+            request.reply(200, "200 Ok");
         } else {
-            x = 0;
+            request.reply(500, "500 Internal Server Error");
         }
-        if (arg_map.find("y") != arg_map.end()) {
-            y = std::stoi(arg_map.at("y"));
-        } else {
-            y = 60;
-        }
-        if (arg_map.find("home") != arg_map.end()) {
-            home = std::stoi(arg_map.at("home"));
-        } else {
-            home = 1;
-        }
-        motion.head_move(x, y, home);
-        request.reply(200, "200 Ok");
     } else if (request.uri_path().find("/motor/action/") == 0) {
         int index = std::stoi(request.uri_path().substr(std::string("/motor/action/").size(), request.uri_path().size()));
-        std::string mp3;
-        if (arg_map.find("audio") != arg_map.end()) {
-            mp3 = arg_map.at("audio");
+        std::string mp3 = arg_map.find("audio") != arg_map.end() ? arg_map.at("audio") : std::string();
+        if (motion.action(index, mp3)) {
+            request.reply(200, "200 Ok");
+        } else {
+            request.reply(500, "500 Internal Server Error");
         }
-        motion.action(index, mp3);
-        request.reply(200, "200 Ok");
     } else {
         request.reply(404, "404 Not Found");
     }

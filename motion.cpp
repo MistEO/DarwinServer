@@ -81,9 +81,10 @@ Motion::~Motion()
     pthread_mutex_destroy(&mlock);
 }
 
-void Motion::walk_start()
+bool Motion::walk_start()
 {
     pthread_mutex_lock(&mlock);
+    bool ret;
 #ifdef DARWIN
     //Slowly stand up
     Action::GetInstance()->m_Joint.SetEnableBody(true, true);
@@ -92,27 +93,35 @@ void Motion::walk_start()
         usleep(8000);
     Walking::GetInstance()->m_Joint.SetEnableBodyWithoutHead(true, true);
     Robot::Walking::GetInstance()->Start();
+    ret = true;
 #else
     std::cout << "call Motion::walk_start()" << std::endl;
+    ret = false;
 #endif // DARWIN
     pthread_mutex_unlock(&mlock);
+    return ret;
 }
 
-void Motion::walk_stop()
+bool Motion::walk_stop()
 {
+    bool ret;
     pthread_mutex_lock(&mlock);
 #ifdef DARWIN
     Walking::GetInstance()->Stop();
     while (Walking::GetInstance()->IsRunning())
         usleep(8 * 1000);
+    ret = true;
 #else
     std::cout << "Call Motion::walk_stop()" << std::endl;
+    ret = false;
 #endif // DARWIN
     pthread_mutex_unlock(&mlock);
+    return ret;
 }
 
-void Motion::walk(int x_move, int a_move, int msec)
+bool Motion::walk(int x_move, int a_move, int msec)
 {
+    bool ret;
     pthread_mutex_lock(&mlock);
 #ifdef DARWIN
     if (msec == 0) {
@@ -131,10 +140,13 @@ void Motion::walk(int x_move, int a_move, int msec)
             }
         }
     }
+    ret = true;
 #else
     std::cout << "Call Motion::walk( " << x_move << ", " << a_move << ", " << msec << " )" << std::endl;
+    ret = false;
 #endif // DARWIN
     pthread_mutex_unlock(&mlock);
+    return ret;
 }
 
 bool Motion::fall_up()
@@ -168,22 +180,27 @@ bool Motion::fall_up()
     return false;
 }
 
-void Motion::head_move(int x, int y, bool home)
+bool Motion::head_move(int x, int y, bool home)
 {
+    bool ret;
     pthread_mutex_lock(&mlock);
 #ifdef DARWIN
     Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
     if (home)
         Head::GetInstance()->MoveToHome();
     Head::GetInstance()->MoveByAngle(x, y);
+    ret = true;
 #else
     std::cout << "Call Motion::head_move( " << x << ", " << y << ", " << home << " )" << std::endl;
+    ret = false;
 #endif // DARWIN
     pthread_mutex_unlock(&mlock);
+    return ret;
 }
 
-void Motion::action(int index, const std::string& audio)
+bool Motion::action(int index, const std::string& audio)
 {
+    bool ret;
     pthread_mutex_lock(&mlock);
 #ifdef DARWIN
     Walking::GetInstance()->Stop();
@@ -198,8 +215,11 @@ void Motion::action(int index, const std::string& audio)
 
     while (Action::GetInstance()->IsRunning() == 1)
         usleep(8000);
+    ret = true;
 #else
     std::cout << "Call Motion::action( " << index << ", " << audio << " )" << std::endl;
+    ret = false;
 #endif // DARWIN
     pthread_mutex_unlock(&mlock);
+    return ret;
 }
