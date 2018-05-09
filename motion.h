@@ -2,11 +2,15 @@
 #define MOTION_H
 
 /* MOTION，达尔文电机控制
+ * 宏定义DARWIN后即控制点击运动，否则仅输出
+ * 宏定义具体见Makefile中DARWINFLAGS
  * 达尔文的电机控制库只能使用stdc++98标准编译
  * 所以该文件也只能使用stdc++98标准
  */
 
+#ifdef DARWIN
 #include <LinuxCM730.h>
+#endif // DARWIN
 
 #include <string>
 
@@ -35,10 +39,12 @@ public:
     //void audio(const std::string & path);
 private:
     Motion();
+#ifdef DARWIN
     minIni* ini;
     Robot::LinuxCM730 linux_cm730;
     Robot::CM730 cm730;
     Robot::LinuxMotionTimer* motion_timer;
+#endif // DARWIN
     static Motion unique_instance;
     pthread_mutex_t mlock;
 };

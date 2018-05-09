@@ -1,11 +1,9 @@
 #include <iostream>
 
+#include "motion.h"
 #include "requestcontrol.h"
 #include "resourcecontrol.h"
 #include "responsemessage.h"
-#ifdef DARWIN
-#include "motion.h"
-#endif
 
 void path_parse(const RequestMessage& request)
 {
@@ -96,18 +94,10 @@ void request_motor(const RequestMessage& request)
 {
     const auto arg_map = RequestMessage::split_query(request.uri_query());
     if (request.uri_path() == "/motor/walk_start") {
-#ifdef DARWIN
         motion.walk_start();
-#else
-        std::cout << "walk start" << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else if (request.uri_path() == "/motor/walk_stop") {
-#ifdef DARWIN
         motion.walk_stop();
-#else
-        std::cout << "walk stop" << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else if (request.uri_path() == "/motor/walk") {
         int x, y, msec;
@@ -126,18 +116,10 @@ void request_motor(const RequestMessage& request)
         } else {
             msec = 2000;
         }
-#ifdef DARWIN
         motion.walk(x, y, msec);
-#else
-        std::cout << "walk, x=" << x << " y=" << y << " msec=" << msec << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else if (request.uri_path() == "/motor/fall_up") {
-#ifdef DARWIN
         motion.fall_up();
-#else
-        std::cout << "fall up" << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else if (request.uri_path() == "/motor/head") {
         int x, y, home;
@@ -156,11 +138,7 @@ void request_motor(const RequestMessage& request)
         } else {
             home = 1;
         }
-#ifdef DARWIN
         motion.head_move(x, y, home);
-#else
-        std::cout << "head, x=" << x << " y=" << y << " home=" << home << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else if (request.uri_path().find("/motor/action/") == 0) {
         int index = std::stoi(request.uri_path().substr(std::string("/motor/action/").size(), request.uri_path().size()));
@@ -168,11 +146,7 @@ void request_motor(const RequestMessage& request)
         if (arg_map.find("audio") != arg_map.end()) {
             mp3 = arg_map.at("audio");
         }
-#ifdef DARWIN
         motion.action(index, mp3);
-#else
-        std::cout << "action:" << index << " , audio:" << mp3 << std::endl;
-#endif
         request.reply(200, "200 Ok");
     } else {
         request.reply(404, "404 Not Found");
