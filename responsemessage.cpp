@@ -100,6 +100,6 @@ int ResponseMessage::send_to(int connfd) const
     //     }
     //     send(connfd, buff.substr(pos, pos + maxsize).data(), maxsize, flags);
     // }
-    std::cout << "send: " << *this << std::endl;
+    std::cout << "Send: " << *this << std::endl;
     return send(connfd, this->to_string().data(), this->to_string().length(), 0);
 }

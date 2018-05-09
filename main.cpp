@@ -83,11 +83,11 @@ void* client_rs_fun(void* arg)
     int connfd = *(int*)arg;
 
     while ((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {
-        printf("recv: %s\n", recv_buf); // 打印数据
+        printf("Recv: %s\n", recv_buf); // 打印数据
         RequestMessage request(connfd, recv_buf);
         path_parse(request);
     }
-    printf("client closed\n");
+    printf("Client closed\n");
     //关闭套接字
     close(connfd);
 
