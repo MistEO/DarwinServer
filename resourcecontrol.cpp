@@ -9,31 +9,36 @@
 #include <string>
 #include <unistd.h>
 
+#include <opencv2/opencv.hpp>
+
 //cv::VideoCapture ResourceControl::capture(-1);
 const std::string ResourceControl::PlayApp("mplayer");
 
 ResourceControl& ResourceControl::ins()
 {
     static ResourceControl instance;
-    if (!instance.capture.isOpened()) {
-        instance.capture.open(-1);
+    if (!instance.camera.isOpened()) {
+        instance.camera.set( CV_CAP_PROP_FORMAT, CV_8UC3 );
+        instance.camera.open();
     }
     return instance;
 }
 
 ResourceControl::~ResourceControl()
 {
-    capture.release();
+    camera.release();
 }
 
 bool ResourceControl::get_image(std::string& data, int& cols, int& rows, int& step)
 {
-    if (!capture.isOpened()) {
+    if (!camera.isOpened()) {
         return false;
     }
     cv::Mat frame;
     capture_mutex.lock();
-    capture >> frame;
+    camera.grab();
+    camera.retrieve(frame);
+    cv::imwrite("test.png", frame);
     capture_mutex.unlock();
     if (frame.empty()) {
         return false;

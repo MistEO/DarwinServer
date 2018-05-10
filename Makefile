@@ -8,7 +8,7 @@ DARWINDEF = $(shell if [ -d /darwin ]; then echo "-DDARWIN"; fi;)
 CXX = g++
 CXXFLAGS := -Wall -std=c++11
 OPENCV = `pkg-config opencv --cflags --libs`
-LIBS = -lpthread
+LIBS = -lpthread -lraspicam_cv
 
 BUILDSTEPS := prepare $(OBJS)
 ifeq ($(DARWINDEF), -DDARWIN)

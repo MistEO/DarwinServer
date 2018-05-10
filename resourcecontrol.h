@@ -4,10 +4,7 @@
 #include <mutex>
 #include <string>
 
-#include <opencv/cv.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/video/tracking.hpp>
+#include <raspicam/raspicam_cv.h>
 
 class ResourceControl {
 public:
@@ -23,7 +20,8 @@ public:
 
 private:
     ResourceControl() = default;
-    cv::VideoCapture capture;
+    raspicam::RaspiCam_Cv camera;
+    // cv::VideoCapture capture;
     std::mutex capture_mutex;
 };
 
