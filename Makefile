@@ -23,7 +23,7 @@ TARGET: $(BUILDSTEPS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(DARWIN_LIB) $(OPENCV) $(LIBS)
 
 test:
-	@echo $(DARWIN_INC)
+	@echo $(CXX) $(CXXFLAGS)
 
 prepare:
 	@mkdir -p $(OBJSDIR)
