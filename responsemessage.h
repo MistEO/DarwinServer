@@ -4,6 +4,8 @@
 
 class ResponseMessage : public AbstractMessage {
 public:
+    ResponseMessage() = default;
+    ResponseMessage(int status, const std::string& text = std::string());
     std::string first_line() const;
     int status() const;
     void set_status(const int status);
@@ -11,6 +13,13 @@ public:
 
     std::string header() const;
     std::string to_string() const;
+
+    std::map<std::string, std::string>& header_map();
+    const std::string& version();
+    const std::string& data();
+    void set_data(const std::string& data);
+
+    int send_to(int connfd) const;
 
 private:
     int _status;

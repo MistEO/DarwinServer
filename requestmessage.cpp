@@ -4,10 +4,11 @@
 #include <iostream>
 #include <vector>
 
-RequestMessage::RequestMessage(const std::string& source_message)
+RequestMessage::RequestMessage(int connfd, const std::string& source_message)
+    : _connfd(connfd)
+    , _source(source_message)
 {
-    _source = source_message;
-    _unpack(source_message);
+    _unpack(_source);
 }
 
 void RequestMessage::_unpack(const std::string& message)
@@ -25,7 +26,7 @@ void RequestMessage::_unpack(const std::string& message)
     _unpack_request_line(*iter);
 
     _header.clear();
-    header_map.clear();
+    _header_map.clear();
     for (++iter; !iter->empty(); ++iter) {
         _header += *iter + "\r\n";
         _unpack_header_line(*iter);
@@ -49,7 +50,18 @@ void RequestMessage::_unpack_request_line(const std::string& line)
 
     // 处理URI
     _uri = request_line.at(1);
-    auto uri_splited = _split_string(request_line.at(1), "?");
+    auto replaceAll = [](std::string& str,
+                          const std::string& oldStr,
+                          const std::string& newStr) {
+        std::string::size_type pos = 0u;
+        while ((pos = str.find(oldStr, pos)) != std::string::npos) {
+            str.replace(pos, oldStr.length(), newStr);
+            pos += newStr.length();
+        }
+    };
+    replaceAll(_uri, "%20", " ");
+    auto uri_splited
+        = _split_string(_uri, "?");
     if (uri_splited.size() == 2) {
         _uri_path = uri_splited.at(0);
         auto after_path_splited = _split_string(uri_splited.at(1), "#");
@@ -67,7 +79,7 @@ void RequestMessage::_unpack_request_line(const std::string& line)
     }
 
     // 处理http版本号
-    version = request_line.at(2);
+    _version = request_line.at(2);
 }
 
 void RequestMessage::_unpack_header_line(const std::string& line)
@@ -81,7 +93,7 @@ void RequestMessage::_unpack_header_line(const std::string& line)
 
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
     // std::cout << "key:" << pair[0] << " value:" << pair[1] << std::endl;
-    header_map[key] = value;
+    _header_map[key] = value;
 }
 
 std::string RequestMessage::first_line() const
@@ -126,15 +138,33 @@ std::string RequestMessage::to_string() const
 
 const std::map<std::string, std::string>& RequestMessage::get_header_map() const
 {
-    return header_map;
+    return _header_map;
 }
+
 const std::string& RequestMessage::get_version() const
 {
-    return version;
+    return _version;
 }
+
 const std::string& RequestMessage::get_data() const
 {
-    return data;
+    return _data;
+}
+
+const int& RequestMessage::get_connfd() const
+{
+    return _connfd;
+}
+
+int RequestMessage::reply(const ResponseMessage& response) const
+{
+    return response.send_to(_connfd);
+}
+
+int RequestMessage::reply(int status, const std::string& text) const
+{
+    ResponseMessage response(status, text);
+    return reply(response);
 }
 
 std::map<std::string, std::string> RequestMessage::split_query(const std::string& query)

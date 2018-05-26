@@ -1,38 +1,51 @@
 SOURCES = $(wildcard *.cpp)
-OBJS = $(patsubst %.cpp, %.o, $(SOURCES))
+OBJSDIR = ./objs
+OBJS = $(foreach obj, $(patsubst %.cpp, %.o, $(SOURCES)), $(OBJSDIR)/$(obj))
 TARGET = server
 
-CXX = g++
-EXFLAGS = 
-CXXFLAGS = -Wall -std=c++11 $(EXFLAGS)
-DARWIN_CXXFLAGS = -Wall -std=c++98 $(EXFLAGS)
+DARWINDEF = $(shell if [ -d /darwin ]; then echo "-DDARWIN"; fi;)
 
-DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
-DARWIN_LIB = /darwin/Linux/lib/darwin.a
+CXX = g++
+CXXFLAGS := -Wall -std=c++11
 OPENCV = `pkg-config opencv --cflags --libs`
 LIBS = -lpthread
 
-TARGET: darwin.a $(OBJS)
+BUILDSTEPS := prepare $(OBJS)
+ifeq ($(DARWINDEF), -DDARWIN)
+	CXXFLAGS += $(DARWINDEF)
+	BUILDSTEPS += darwin.a
+	DARWIN_CXXFLAGS = -Wall -std=c++98 -DDARWIN
+	DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
+	DARWIN_LIB = /darwin/Linux/lib/darwin.a
+endif
+
+TARGET: $(BUILDSTEPS)
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(DARWIN_LIB) $(OPENCV) $(LIBS)
+
+test:
+	@echo $(DARWIN_INC)
+
+prepare:
+	@mkdir -p $(OBJSDIR)
 
 darwin.a:
 	make -C /darwin/Linux/build
 
-main.o: main.cpp
-	$(CXX) $(CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
+# main.o: main.cpp
+# 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
 
-motion.o: motion.cpp
-	$(CXX) $(DARWIN_CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
+# motion.o: motion.cpp
+# 	$(CXX) $(DARWIN_CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
 
-resourcecontrol.o: resourcecontrol.cpp
+$(OBJSDIR)/resourcecontrol.o: resourcecontrol.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(OPENCV)
 
-%.o: %.cpp
+$(OBJSDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-.PHONY: clean cleanlib
+.PHONY: clean #  cleanlib
 clean:
-	rm -f *.a *.o *.ymal $(TARGET) core *~ *.so *.lo *.swp
+	rm -rf $(TARGET) $(OBJS)
 
-cleanlib:
-	make -C /darwin/Linux/build clean
+# cleanlib:
+#	make -C /darwin/Linux/build clean
