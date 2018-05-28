@@ -32,3 +32,4 @@ objs
 *.out
 *.app
 server
+*.wav

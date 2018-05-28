@@ -19,7 +19,7 @@ void path_parse(const RequestMessage& request)
                 request_audio(request);
             } else if (request.uri_path() == "/audio_stop") {
                 request_stop_audio(request);
-            } else if (request.uri_path().find("/mic") == 0) {
+            } else if (request.uri_path() == "/mic") {
                 request_mic(request);
             } else if (request.uri_path().find("/motor") == 0) {
                 request_motor(request);
