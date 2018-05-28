@@ -48,6 +48,8 @@
         "sstream": "cpp",
         "streambuf": "cpp",
         "string_view": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "deque": "cpp",
+        "unordered_map": "cpp"
     }
 }

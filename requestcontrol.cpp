@@ -19,6 +19,8 @@ void path_parse(const RequestMessage& request)
                 request_audio(request);
             } else if (request.uri_path() == "/audio_stop") {
                 request_stop_audio(request);
+            } else if (request.uri_path().find("/mic") == 0) {
+                request_mic(request);
             } else if (request.uri_path().find("/motor") == 0) {
                 request_motor(request);
             } else {
@@ -88,6 +90,20 @@ void request_stop_audio(const RequestMessage& request)
     } else {
         request.reply(500, "500 Internal Server Error");
     }
+}
+
+void request_mic(const RequestMessage& request)
+{
+    ResponseMessage response;
+    std::string mic_data;
+    if (resource.get_mic(3, mic_data)) {
+        response.header_map()["Content-Type"] = "audio/wav";
+        response.set_status(200);
+        response.set_data(mic_data);
+    } else {
+        response = ResponseMessage(500, "500 Internal Server Error");
+    }
+    request.reply(response);
 }
 
 void request_motor(const RequestMessage& request)

@@ -107,3 +107,11 @@ bool ResourceControl::get_file(const std::string& file_path, std::string& data)
     data = str;
     return true;
 }
+
+bool ResourceControl::get_mic(int time, std::string& data)
+{
+    std::lock_guard<std::mutex> locker(mic_mutex);
+    std::string record_cmd = "arecord demo.wav -d " + std::to_string(time);
+    system(record_cmd.c_str());
+    return get_file("demo.wav", data);
+}

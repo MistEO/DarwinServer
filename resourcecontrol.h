@@ -20,11 +20,13 @@ public:
     bool stop_audio();
     bool play_audio(const std::string& file_path);
     bool get_file(const std::string& file_path, std::string& data);
+    bool get_mic(int time, std::string& data);
 
 private:
     ResourceControl() = default;
     cv::VideoCapture capture;
     std::mutex capture_mutex;
+    std::mutex mic_mutex;
 };
 
 #define resource ResourceControl::ins()
