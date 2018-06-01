@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <malloc.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <signal.h>
@@ -8,7 +9,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <malloc.h>
 
 #include <iostream>
 #include <map>
@@ -78,12 +78,10 @@ void got_signal(int)
 
 void* client_rs_fun(void* arg)
 {
-    int recv_len = 0;
-    uint buffsize = 1024 * 1024 * 1024; // 1M
-    char * recv_buf = (char*)malloc(sizeof(char) * buffsize);
+    char recv_buf[4096] = "";
     int connfd = *(int*)arg;
 
-    while ((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {
+    while (recv(connfd, recv_buf, sizeof(recv_buf), 0) > 0) {
         printf("Recv: %s\n", recv_buf); // 打印数据
         path_parse(connfd, recv_buf);
     }

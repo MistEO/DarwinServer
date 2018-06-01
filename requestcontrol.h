@@ -11,4 +11,4 @@ void request_stop_audio(const RequestMessage& request);
 void request_mic(const RequestMessage& request);
 void request_motor(const RequestMessage& request);
 
-void request_post_audio(const RequestMessage& request);
+// void request_post_audio(const RequestMessage& request);

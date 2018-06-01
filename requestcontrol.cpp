@@ -29,13 +29,6 @@ void path_parse(int connfd, const std::string& source_message)
                 request.reply(404, "404 Not Found");
             }
             break;
-        case RequestMessage::POST:
-            if (request.uri_path() == "/audio") {
-                request_post_audio(request);
-            } else {
-                request.reply(404, "404 Not Found");
-            }
-            break;
         default:
             request.reply(405, "405 Method Not Allowed");
             break;
@@ -103,16 +96,14 @@ void request_stop_audio(const RequestMessage& request)
 
 void request_mic(const RequestMessage& request)
 {
-    ResponseMessage response;
-    std::string mic_data;
-    if (resource.get_mic(3, mic_data)) {
-        response.header_map()["Content-Type"] = "audio/wav";
-        response.set_status(200);
-        response.set_data(mic_data);
+    const auto arg_map = RequestMessage::split_query(request.uri_query());
+    int time = arg_map.find("time") != arg_map.end() ? std::stoi(arg_map.at("time")) : 5;
+    std::string filename;
+    if (resource.get_mic(time, filename)) {
+        request.reply(200, filename);
     } else {
-        response = ResponseMessage(500, "500 Internal Server Error");
+        request.reply(500, "500 Internal Server Error");
     }
-    request.reply(response);
 }
 
 void request_motor(const RequestMessage& request)
