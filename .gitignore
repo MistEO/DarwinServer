@@ -33,3 +33,6 @@ objs
 *.app
 server
 *.wav
+
+# IDE
+.vscode
