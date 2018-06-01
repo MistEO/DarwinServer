@@ -6,8 +6,15 @@
 
 RequestMessage::RequestMessage(int connfd, const std::string& source_message)
     : _connfd(connfd)
-    , _source(source_message)
 {
+    if (!source_message.empty()) {
+        set_source(source_message);
+    }
+}
+
+void RequestMessage::set_source(const std::string& source)
+{
+    _source = source;
     _unpack(_source);
 }
 
@@ -44,6 +51,8 @@ void RequestMessage::_unpack_request_line(const std::string& line)
     // 处理请求类型
     if (request_line.at(0) == "GET") {
         _method = RequestMethod::GET;
+    } else if (request_line.at(0) == "POST") {
+        _method = RequestMethod::POST;
     } else {
         throw HttpException("the request method is invaild: " + request_line.at(0));
     }

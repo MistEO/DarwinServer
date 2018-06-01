@@ -50,6 +50,7 @@
         "string_view": "cpp",
         "fstream": "cpp",
         "deque": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "algorithm": "cpp"
     }
 }

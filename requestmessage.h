@@ -7,10 +7,12 @@ class RequestMessage : private AbstractMessage {
 public:
     enum RequestMethod {
         GET,
+        POST,
         Unknown
     };
 
-    RequestMessage(int connfd, const std::string& source_message);
+    RequestMessage(int connfd, const std::string& source_message = std::string());
+    void set_source(const std::string& source_message);
     std::string first_line() const;
     RequestMethod request_method() const;
     std::string uri() const;

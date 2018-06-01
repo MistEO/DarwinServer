@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <malloc.h>
 
 #include <iostream>
 #include <map>
@@ -16,7 +17,6 @@
 #include <vector>
 
 #include "requestcontrol.h"
-#include "requestmessage.h"
 
 void* client_rs_fun(void* arg);
 
@@ -79,13 +79,13 @@ void got_signal(int)
 void* client_rs_fun(void* arg)
 {
     int recv_len = 0;
-    char recv_buf[1024] = "";
+    uint buffsize = 1024 * 1024 * 1024; // 1M
+    char * recv_buf = (char*)malloc(sizeof(char) * buffsize);
     int connfd = *(int*)arg;
 
     while ((recv_len = recv(connfd, recv_buf, sizeof(recv_buf), 0)) > 0) {
         printf("Recv: %s\n", recv_buf); // 打印数据
-        RequestMessage request(connfd, recv_buf);
-        path_parse(request);
+        path_parse(connfd, recv_buf);
     }
     printf("Client closed\n");
     //关闭套接字

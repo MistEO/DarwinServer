@@ -5,9 +5,11 @@
 #include "resourcecontrol.h"
 #include "responsemessage.h"
 
-void path_parse(const RequestMessage& request)
+void path_parse(int connfd, const std::string& source_message)
 {
+    RequestMessage request(connfd);
     try {
+        request.set_source(source_message);
         switch (request.request_method()) {
         case RequestMessage::GET:
             if (request.uri_path() == "/"
@@ -23,6 +25,13 @@ void path_parse(const RequestMessage& request)
                 request_mic(request);
             } else if (request.uri_path().find("/motor") == 0) {
                 request_motor(request);
+            } else {
+                request.reply(404, "404 Not Found");
+            }
+            break;
+        case RequestMessage::POST:
+            if (request.uri_path() == "/audio") {
+                request_post_audio(request);
             } else {
                 request.reply(404, "404 Not Found");
             }
@@ -156,4 +165,21 @@ void request_motor(const RequestMessage& request)
     } else {
         request.reply(404, "404 Not Found");
     }
+}
+
+void request_post_audio(const RequestMessage& request)
+{
+    std::string format = (request.get_header_map().find("format") != request.get_header_map().end())
+        ? request.get_header_map().at("format")
+        : "mp3";
+    std::string filename = "/tmp/recv." + format;
+    if (!resource.write_file(filename, request.get_data())) {
+        request.reply(500, "500 Internal Server Error");
+        return;
+    }
+    if (!resource.play_audio(filename)) {
+        request.reply(500, "500 Internal Server Error");
+        return;
+    }
+    request.reply(200, "200 Ok");
 }

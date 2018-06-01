@@ -111,7 +111,16 @@ bool ResourceControl::get_file(const std::string& file_path, std::string& data)
 bool ResourceControl::get_mic(int time, std::string& data)
 {
     std::lock_guard<std::mutex> locker(mic_mutex);
-    std::string record_cmd = "arecord demo.wav -d " + std::to_string(time);
+    std::string record_cmd = "arecord /tmp/mic.wav -d " + std::to_string(time);
     system(record_cmd.c_str());
-    return get_file("demo.wav", data);
+    return get_file("/tmp/mic.wav", data);
+}
+
+bool ResourceControl::write_file(const std::string& filename, const std::string& data)
+{
+    std::ofstream file;
+    file.open(filename, std::ios::out | std::ios::binary);
+    file.write(data.c_str(), data.size());
+    file.close();
+    return true;
 }
