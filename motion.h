@@ -39,12 +39,12 @@ public:
     //void audio(const std::string & path);
 private:
     Motion();
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     minIni* ini;
     Robot::LinuxCM730 linux_cm730;
     Robot::CM730 cm730;
     Robot::LinuxMotionTimer* motion_timer;
-#endif // DARWIN
+#endif // DARWIN || ROBOTIS
     // static Motion unique_instance;
     pthread_mutex_t mlock;
 };

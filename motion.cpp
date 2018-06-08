@@ -4,18 +4,26 @@
 #include <iostream>
 #include <unistd.h>
 
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
 #include <DARwIn.h>
 #include <LinuxCM730.h>
 #include <LinuxDARwIn.h>
 
 using namespace Robot;
 
+#endif // DARWIN || ROBOTIS
+
+#ifdef DARWIN
+const char* INI_FILE_PATH = "/darwin/Data/config.ini";
+const char* U2D_DEV_NAME = "/dev/ttyUSB0";
+const char* MOTION_FILE_PATH = "/darwin/Data/motion_4096.bin";
+#endif // DARWIN
+
+#ifdef ROBOTIS
 const char* INI_FILE_PATH = "/robotis/Data/config.ini";
 const char* U2D_DEV_NAME = "/dev/ttyUSB0";
 const char* MOTION_FILE_PATH = "/robotis/Data/motion_4096.bin";
-#endif // DARWIN
-
+#endif // ROBOTIS
 
 Motion& Motion::ins()
 {
@@ -24,7 +32,7 @@ Motion& Motion::ins()
 }
 
 Motion::Motion()
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     : ini(new minIni(INI_FILE_PATH))
     , linux_cm730(U2D_DEV_NAME)
     , cm730(&linux_cm730)
@@ -32,7 +40,7 @@ Motion::Motion()
 
 {
     pthread_mutex_init(&mlock, NULL);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     Action::GetInstance()->LoadFile(const_cast<char*>(MOTION_FILE_PATH));
 
     assert(MotionManager::GetInstance()->Initialize(&cm730));
@@ -62,7 +70,7 @@ Motion::Motion()
 
 Motion::~Motion()
 {
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     Walking::GetInstance()->Stop();
     while (Walking::GetInstance()->IsRunning())
         usleep(8 * 1000);
@@ -82,7 +90,7 @@ bool Motion::walk_start()
 {
     pthread_mutex_lock(&mlock);
     bool ret;
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     //Slowly stand up
     Action::GetInstance()->m_Joint.SetEnableBody(true, true);
     Action::GetInstance()->Start(9);
@@ -103,7 +111,7 @@ bool Motion::walk_stop()
 {
     bool ret;
     pthread_mutex_lock(&mlock);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     Walking::GetInstance()->Stop();
     while (Walking::GetInstance()->IsRunning())
         usleep(8 * 1000);
@@ -120,7 +128,7 @@ bool Motion::walk(int x_move, int a_move, int msec)
 {
     bool ret;
     pthread_mutex_lock(&mlock);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     if (msec == 0) {
         Robot::Walking::GetInstance()->X_MOVE_AMPLITUDE = x_move; //Straight speed
         Robot::Walking::GetInstance()->A_MOVE_AMPLITUDE = a_move; //Turn speed
@@ -149,7 +157,7 @@ bool Motion::walk(int x_move, int a_move, int msec)
 bool Motion::fall_up()
 {
     pthread_mutex_lock(&mlock);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     if (MotionStatus::FALLEN != STANDUP) {
         Walking::GetInstance()->Stop();
         while (Walking::GetInstance()->IsRunning() == 1)
@@ -181,7 +189,7 @@ bool Motion::head_move(int x, int y, bool home)
 {
     bool ret;
     pthread_mutex_lock(&mlock);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     Head::GetInstance()->m_Joint.SetEnableHeadOnly(true, true);
     if (home)
         Head::GetInstance()->MoveToHome();
@@ -199,7 +207,7 @@ bool Motion::action(int index, const std::string& audio)
 {
     bool ret;
     pthread_mutex_lock(&mlock);
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
     Walking::GetInstance()->Stop();
     while (Walking::GetInstance()->IsRunning() == 1)
         usleep(8000);
