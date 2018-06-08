@@ -8,7 +8,7 @@
  * 所以该文件也只能使用stdc++98标准
  */
 
-#ifdef DARWIN
+#if defined(DARWIN) || defined(ROBOTIS)
 #include <LinuxCM730.h>
 #endif // DARWIN
 
