@@ -16,10 +16,10 @@ const char* U2D_DEV_NAME = "/dev/ttyUSB0";
 const char* MOTION_FILE_PATH = "/robotis/Data/motion_4096.bin";
 #endif // DARWIN
 
-Motion Motion::unique_instance;
 
 Motion& Motion::ins()
 {
+    static Motion unique_instance;
     return unique_instance;
 }
 

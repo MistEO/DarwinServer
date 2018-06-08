@@ -45,7 +45,7 @@ private:
     Robot::CM730 cm730;
     Robot::LinuxMotionTimer* motion_timer;
 #endif // DARWIN
-    static Motion unique_instance;
+    // static Motion unique_instance;
     pthread_mutex_t mlock;
 };
 
