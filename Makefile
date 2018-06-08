@@ -3,7 +3,7 @@ OBJSDIR = ./objs
 OBJS = $(foreach obj, $(patsubst %.cpp, %.o, $(SOURCES)), $(OBJSDIR)/$(obj))
 TARGET = server
 
-DARWINDEF = $(shell if [ -d /darwin ]; then echo "-DDARWIN"; fi;)
+DARWINDEF = $(shell if [ -d /robotis ]; then echo "-DDARWIN"; fi;)
 
 CXX = g++
 CXXFLAGS := -Wall -std=c++11
@@ -14,9 +14,9 @@ BUILDSTEPS := prepare $(OBJS)
 ifeq ($(DARWINDEF), -DDARWIN)
 	CXXFLAGS += $(DARWINDEF)
 	BUILDSTEPS += darwin.a
-	DARWIN_CXXFLAGS = -Wall -std=c++98 -DDARWIN
-	DARWIN_INC = -I/darwin/Linux/include -I/darwin/Framework/include
-	DARWIN_LIB = /darwin/Linux/lib/darwin.a
+	DARWIN_CXXFLAGS = -Wall -DDARWIN
+	DARWIN_INC = -I/robotis/Linux/include/ -I/robotis/Framework/include
+	DARWIN_LIB = /robotis/Linux/lib/darwin.a
 endif
 
 TARGET: $(BUILDSTEPS)
@@ -29,13 +29,13 @@ prepare:
 	@mkdir -p $(OBJSDIR)
 
 darwin.a:
-	make -C /darwin/Linux/build
+	make -C /robotis/Linux/build
 
-# main.o: main.cpp
-# 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
+$(OBJSDIR)/requestcontrol.o: requestcontrol.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
 
-# motion.o: motion.cpp
-# 	$(CXX) $(DARWIN_CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
+$(OBJSDIR)/motion.o: motion.cpp
+	$(CXX) $(DARWIN_CXXFLAGS) -o $@ -c $< $(DARWIN_INC)
 
 $(OBJSDIR)/resourcecontrol.o: resourcecontrol.cpp
 	$(CXX) $(CXXFLAGS) -o $@ -c $< $(OPENCV)

@@ -11,9 +11,9 @@
 
 using namespace Robot;
 
-const char* INI_FILE_PATH = "/darwin/Data/config.ini";
+const char* INI_FILE_PATH = "/robotis/Data/config.ini";
 const char* U2D_DEV_NAME = "/dev/ttyUSB0";
-const char* MOTION_FILE_PATH = "/darwin/Data/motion_4096.bin";
+const char* MOTION_FILE_PATH = "/robotis/Data/motion_4096.bin";
 #endif // DARWIN
 
 Motion Motion::unique_instance;
@@ -23,18 +23,15 @@ Motion& Motion::ins()
     return unique_instance;
 }
 
-#ifdef DARWIN
 Motion::Motion()
+#ifdef DARWIN
     : ini(new minIni(INI_FILE_PATH))
     , linux_cm730(U2D_DEV_NAME)
     , cm730(&linux_cm730)
-    , mlock(PTHREAD_MUTEX_INITIALIZER)
-#else
-Motion::Motion()
-    : mlock(PTHREAD_MUTEX_INITIALIZER)
 #endif // DARWIN
 
 {
+    pthread_mutex_init(&mlock, NULL);
 #ifdef DARWIN
     Action::GetInstance()->LoadFile(const_cast<char*>(MOTION_FILE_PATH));
 
